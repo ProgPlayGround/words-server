@@ -1,8 +1,13 @@
-var express = require('express');
-var router = express.Router();
+var router = require('express').Router();
+var db;
+require('../services/mongoConnection')(function(mongo) {
+  db = mongo;
+});
 
 router.get('/', function(req, res, next) {
-  res.send('response from the dictionary');
+    db.collection('basic').find({}, {_id:0}).toArray(function(err, data) {
+      res.send(data);
+    });
 });
 
 module.exports = router;

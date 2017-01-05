@@ -4,6 +4,7 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 
 var dictionary = require('./routes/dictionary');
+var authentication = require('./routes/authentication');
 
 var app = express();
 
@@ -12,12 +13,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', 'http://localhost:8000');
-  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Methods', 'GET,POST');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   next();
 });
 
 app.use('/dictionary', dictionary);
+app.use('/authenticate', authentication);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

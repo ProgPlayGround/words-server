@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 
 var dictionary = require('./routes/dictionary');
 var authentication = require('./routes/authentication');
+var profile = require('./routes/profile');
 
 var app = express();
 
@@ -20,6 +21,7 @@ app.use(function(req, res, next) {
 
 app.use('/dictionary', dictionary);
 app.use('/authenticate', authentication);
+app.use('/profile', profile);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

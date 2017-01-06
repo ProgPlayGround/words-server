@@ -4,6 +4,7 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 
 var dictionary = require('./routes/dictionary');
+var profile = require('./routes/profile');
 
 var app = express();
 
@@ -18,6 +19,7 @@ app.use(function(req, res, next) {
 });
 
 app.use('/dictionary', dictionary);
+app.use('/profile', profile);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,6 +1,6 @@
 var router = require('express').Router();
 var db;
-require('../services/mongoConnection')(function(mongo) {
+require('../services/mongoConnection')('dictionary', function(mongo) {
   db = mongo;
 });
 

@@ -7,11 +7,14 @@ var dictionary = require('./routes/dictionary');
 var authentication = require('./routes/authentication');
 var profile = require('./routes/profile');
 
+var authorization = require('./common/authorization');
+
 var app = express();
 
 app.use(logger('dev'));
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 app.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', 'http://localhost:8000');
   res.header('Access-Control-Allow-Methods', 'GET,POST');
@@ -19,9 +22,9 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use('/dictionary', dictionary);
-app.use('/authenticate', authentication);
-app.use('/profile', profile);
+app.use('/authenticate', authentication.interceptor, authentication.api);
+app.use('/dictionary', authorization, dictionary);
+app.use('/profile', authorization, profile);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

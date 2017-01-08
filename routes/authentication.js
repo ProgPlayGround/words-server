@@ -10,6 +10,7 @@ require('../services/mongoConnection')('users', function(mongo) {
 var requestValidator = function(req, res, next) {
     if(!req.body.username || !req.body.password) {
       res.status(400).send({
+        'success': false,
         'message': 'User info should be specified'
       });
     } else {
@@ -25,6 +26,7 @@ router.post('/registration', function(req, res, next) {
   db.collection('user').insert(user, {w:1}, function(err, data) {
     if(err) {
       res.status(400).send({
+        'success': false,
         'message': 'User already exist'
       });
     } else {
@@ -45,10 +47,12 @@ router.post('/login', function(req, res, next) {
   db.collection('user').findOne(user, function(err, data) {
     if(err) {
       res.status(500).send({
+        'success': false,
         'message': err
       });
     } else if(!data) {
       res.status(401).send({
+        'success': false,
         'message': 'Wrong credentials'
       });
     } else {

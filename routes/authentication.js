@@ -5,17 +5,6 @@ var config = require('../config');
 
 var db = mongojs(config.dbUrl + 'users');
 
-var requestValidator = function(req, res, next) {
-    if(!req.body.username || !req.body.password) {
-      res.status(400).send({
-        'success': false,
-        'message': 'No credentials specified'
-      });
-    } else {
-      next();
-    }
-};
-
 var createSession = function(user) {
   var session = {};
   session.token = jwt.sign(user, config.secret);
@@ -25,6 +14,14 @@ var createSession = function(user) {
 }
 
 router.post('/registration', function(req, res, next) {
+
+  if(!req.body.username || !req.body.password) {
+    res.status(400).send({
+      'success': false,
+      'message': 'No credentials specified'
+    });
+  }
+
   var user = {
     '_id': req.body.username
   };
@@ -62,6 +59,14 @@ router.post('/registration', function(req, res, next) {
 });
 
 router.post('/login', function(req, res, next) {
+
+  if(!req.body.username || !req.body.password) {
+    res.status(400).send({
+      'success': false,
+      'message': 'No credentials specified'
+    });
+  }
+
   var user = {'_id': req.body.username, 'password': req.body.password};
   db.collection('user').findOne(user, function(err, data) {
     if(err) {
@@ -94,7 +99,29 @@ router.post('/login', function(req, res, next) {
     }});
   });
 
-module.exports = {
-  'api': router,
-  'interceptor': requestValidator
-};
+  router.post('/logout', function(req, res, next) {
+    if(req.body.username && req.body.token) {
+     var session = db.collection('user').findAndModify({
+       query: {'_id': req.body.username, 'session.token': req.body.token},
+       update: {$set: {'session': {}}}
+     }, function(err, user) {
+       if(err) {
+         return res.status(403).send({
+           'success': false,
+           'message': 'Failed to logout'
+         });
+       } else {
+         return res.status(200).json({
+           'success': true
+         });
+       }
+     });
+    } else {
+       return res.status(403).send({
+         'success': false,
+         'message': 'No token provided'
+       });
+    }
+  });
+
+module.exports = router;

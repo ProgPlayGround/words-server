@@ -26,7 +26,7 @@ app.options('*', function(req, res) {
   res.send(200);
 });
 
-app.use('/authenticate', authentication.interceptor, authentication.api);
+app.use('/authenticate', authentication);
 app.use('/dictionary', authorization, dictionary);
 app.use('/profile', authorization, profile);
 

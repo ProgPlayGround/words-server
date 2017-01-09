@@ -9,12 +9,11 @@ var createSession = function(user) {
   var session = {};
   session.token = jwt.sign(user, config.secret);
   var expires = new Date();
-  session.expires = expires.setMinutes(expires.getMinutes() + 1);
+  session.expires = expires.setMinutes(expires.getMinutes() + 30);
   return session;
 }
 
 router.post('/registration', function(req, res, next) {
-
   if(!req.body.username || !req.body.password) {
     res.status(400).send({
       'success': false,
@@ -33,7 +32,7 @@ router.post('/registration', function(req, res, next) {
         'message': err
       });
     } else if(data) {
-      res.status(401).send({
+      res.status(400).send({
         'success': false,
         'message': 'User already exist'
       });
@@ -108,7 +107,7 @@ router.post('/login', function(req, res, next) {
        if(err) {
          return res.status(403).send({
            'success': false,
-           'message': 'Failed to logout'
+           'message': 'Credentials are incorect'
          });
        } else {
          return res.status(200).json({
@@ -119,7 +118,7 @@ router.post('/login', function(req, res, next) {
     } else {
        return res.status(403).send({
          'success': false,
-         'message': 'No token provided'
+         'message': 'Credentials isn\'t provided'
        });
     }
   });

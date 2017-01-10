@@ -6,7 +6,7 @@ var redisClient = require('../common/redisConnection');
 
 var db = mongojs(config.dbUrl + 'users');
 
-var createSession = function(user) {
+var createToken = function(user) {
   return jwt.sign({'id': user, 'key': config.jwtKey }, config.secret, { expiresIn: '30m' });;
 }
 
@@ -50,7 +50,7 @@ router.post('/registration', function(req, res, next) {
         } else {
           res.status(200).json({
             'success': true,
-            'session': createSession(req.body.username)
+            'token': createToken(req.body.username)
           });
         }
       });
@@ -77,22 +77,23 @@ router.post('/login', function(req, res, next) {
     } else {
       res.status(200).json({
         'success': true,
-        'session': createSession(req.body.username)
+        'token': createToken(req.body.username)
       });
     }});
   });
 
   router.post('/logout', function(req, res, next) {
-    if(req.body.token) {
-     jwt.verify(req.body.token, config.secret, function(err, decoded) {
+    var token = req.body.token || req.query.token || req.headers['x-access-token'];
+    if(token) {
+     jwt.verify(token, config.secret, function(err, decoded) {
        if(err) {
          return res.status(400).send({
            'success': false,
            'message': 'Credentials are incorect'
          });
        } else {
-         redisClient.set(req.body.token, decoded.id);
-         redisClient.expireat(req.body.token, decoded.exp);
+         redisClient.set(token, decoded.id);
+         redisClient.expireat(token, decoded.exp);
 
          return res.status(200).json({
            'success': true

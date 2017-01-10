@@ -7,11 +7,7 @@ var redisClient = require('../common/redisConnection');
 var db = mongojs(config.dbUrl + 'users');
 
 var createSession = function(user) {
-  var session = {};
-  var expires = new Date();
-  session.expires = expires.setMinutes(expires.getMinutes() + 30);
-  session.token = jwt.sign({'id': user, 'expires': session.expires }, config.secret);
-  return session;
+  return jwt.sign({'id': user, 'key': config.jwtKey }, config.secret, { expiresIn: '30m' });;
 }
 
 function validateCredentials(req, res) {
@@ -96,7 +92,7 @@ router.post('/login', function(req, res, next) {
          });
        } else {
          redisClient.set(req.body.token, decoded.id);
-         redisClient.expireat(req.body.token, decoded.expires);
+         redisClient.expireat(req.body.token, decoded.exp);
 
          return res.status(200).json({
            'success': true

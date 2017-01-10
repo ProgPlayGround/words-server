@@ -9,25 +9,23 @@ function authorization(req, res, next) {
 
   if(token) {
     jwt.verify(token, config.secret, function(err, decoded) {
-       if(err) {
-         return res.status(403).send({
-           'success': false,
-           'message': 'Failed to authenticate with token'
-         });
-       } else {
-         redisClient.exists(token, function(err, reply) {
-           console.log(reply);
-           if(reply) {
-             return res.status(403).send({
-               'success': false,
-               'message': 'Failed to authenticate with token'
-             });
-           } else {
-             console.log('test');
-             next();
-           }
-         });
-       }
+      if(err) {
+       return res.status(403).send({
+         'success': false,
+         'message': 'Failed to authenticate with token'
+       });
+      } else {
+       redisClient.exists(token, function(err, reply) {
+         if(reply) {
+           return res.status(403).send({
+             'success': false,
+             'message': 'Failed to authenticate with token'
+           });
+         } else {
+           next();
+         }
+       });
+      }
       });
    } else {
      return res.status(403).send({

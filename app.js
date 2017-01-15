@@ -23,7 +23,7 @@ app.use(function(req, res, next) {
 });
 
 app.options('*', function(req, res) {
-  res.send(200);
+  res.sendStatus(200);
 });
 
 app.use('/authenticate', authentication);
@@ -36,7 +36,8 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
-
+console.log(app.get('env'));
+console.log(app.get('env') === 'dev');
 // error handlers
 if (app.get('env') === 'dev') {
   app.use(function(err, req, res, next) {

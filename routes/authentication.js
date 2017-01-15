@@ -1,13 +1,12 @@
 var router = require('express').Router();
-var jwt = require('jsonwebtoken');
+var crypto = require('crypto');
 var mongojs = require('mongojs');
 var config = require('../config');
-var redisClient = require('../common/redisConnection');
-
 var db = mongojs(config.dbUrl + 'users');
 
-var createToken = function(user) {
-  return jwt.sign({'id': user, 'key': config.jwtKey }, config.secret, { expiresIn: '30m' });;
+function decodeCredentials(salt, password, callback) {
+  var withSecret = salt + config.secret;
+  crypto.pbkdf2(password, withSecret, 50, 512, 'sha512', callback);
 }
 
 function validateCredentials(req, res) {
@@ -29,28 +28,29 @@ router.post('/registration', function(req, res, next) {
 
   db.collection('user').findOne(user, function(err, data) {
     if(err) {
-      res.status(500).send({
-        'success': false,
-        'message': err
-      });
+      throw err;
     } else if(data) {
       res.status(400).send({
         'success': false,
         'message': 'User already exist'
       });
     } else {
-      //TODO: validate password
-      user.password = req.body.password;
-      db.collection('user').insert(user, function(err, data) {
+      var salt = crypto.randomBytes(128).toString('base64');
+      decodeCredentials(salt, req.body.password, function(err, key) {
         if(err) {
-          res.status(500).send({
-            'success': false,
-            'message': err
-          });
+          throw err;
         } else {
-          res.status(200).json({
-            'success': true,
-            'token': createToken(req.body.username)
+          user.sha = key.toString('hex');
+          user.salt = salt;
+          db.collection('user').insert(user, function(err, data) {
+            if(err) {
+              throw err;
+            } else {
+              res.status(200).json({
+                'success': true,
+                'token': user.sha
+              });
+            }
           });
         }
       });
@@ -61,51 +61,34 @@ router.post('/registration', function(req, res, next) {
 router.post('/login', function(req, res, next) {
 
   validateCredentials(req, res);
-  var user = {'_id': req.body.username, 'password': req.body.password};
+
+  var user = {'_id': req.body.username };
 
   db.collection('user').findOne(user, function(err, data) {
     if(err) {
-      res.status(500).send({
-        'success': false,
-        'message': err
-      });
+      throw err;
     } else if(!data) {
       res.status(401).send({
         'success': false,
-        'message': 'Wrong credentials specified'
+        'message': 'User doesn\'t exists'
       });
     } else {
-      res.status(200).json({
-        'success': true,
-        'token': createToken(req.body.username)
+      decodeCredentials(data.salt, req.body.password, function(err, key) {
+        if(err) {
+          throw err;
+        } else if(data.sha == key.toString('hex')) {
+          res.status(200).json({
+            'success': true,
+            'token': data.sha
+          });
+        } else {
+          res.status(401).send({
+            'success': false,
+            'message': 'Wrong credentials'
+          });
+        }
       });
     }});
-  });
-
-  router.post('/logout', function(req, res, next) {
-    var token = req.body.token || req.query.token || req.headers['x-access-token'];
-    if(token) {
-     jwt.verify(token, config.secret, function(err, decoded) {
-       if(err) {
-         return res.status(400).send({
-           'success': false,
-           'message': 'Credentials are incorect'
-         });
-       } else {
-         redisClient.set(token, decoded.id);
-         redisClient.expireat(token, decoded.exp);
-
-         return res.status(200).json({
-           'success': true
-         });
-       }
-     });
-    } else {
-       return res.status(400).send({
-         'success': false,
-         'message': 'Credentials isn\'t provided'
-       });
-    }
   });
 
 module.exports = router;

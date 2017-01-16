@@ -6,12 +6,12 @@ var db = mongojs(config.dbUrl + 'users');
 
 function decodeCredentials(salt, password, callback) {
   var withSecret = salt + config.secret;
-  crypto.pbkdf2(password, withSecret, 50, 512, 'sha512', callback);
+  crypto.pbkdf2(password, withSecret, 10000, 512, 'sha512', callback);
 }
 
 function decodeCredentialsSync(salt, password) {
   var withSecret = salt + config.secret;
-  return crypto.pbkdf2Sync(password, withSecret, 50, 512, 'sha512');
+  return crypto.pbkdf2Sync(password, withSecret, 10000, 512, 'sha512');
 }
 
 function validateCredentials(req, res) {

@@ -3,6 +3,7 @@ var jwt = require('jsonwebtoken');
 var config = require('../config');
 var redisClient = require('../common/redisConnection');
 var https = require('https');
+var crypto = require('crypto');
 
 function authorization(req, res, next) {
 
@@ -12,9 +13,9 @@ function authorization(req, res, next) {
   if(auth[authType]) {
     auth[authType](token, res, next);
   } else {
-    return res.status(400).send({
+    return res.status(403).send({
       'success': false,
-      'message': 'Inccorect auth method'
+      'message': 'Incorect auth method'
     });
   }
 }
@@ -79,6 +80,18 @@ var auth = {
         });
       }
     }).end();
+  },
+  vk: function(token, res, next) {
+    var keys = token.split('&');
+    var md5 = crypto.createHash('md5').update(keys[0] + config.vkSecret).digest('hex');
+    if(md5 === keys[1]) {
+      next();
+    } else {
+      return res.status(403).send({
+        'success': false,
+        'message': 'Incorrect token'
+      });
+    }
   }
 }
 

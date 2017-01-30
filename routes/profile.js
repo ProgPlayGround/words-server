@@ -6,7 +6,6 @@ var db = mongojs(dbUrl + 'users');
 
 router.get('/', function(req, res, next) {
   db.collection('profile').findOne({'_id': ObjectID('586935ac751c86c41182fe7f')}, function(err, data) {
-    console.log(err);
     res.send(data);
   });
 });

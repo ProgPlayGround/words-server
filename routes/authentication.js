@@ -27,6 +27,7 @@ function validateCredentials(req, res) {
   if(!req.body.username || !req.body.password) {
     return res.status(400).send({
       'success': false,
+      'errorCode': 0,
       'message': 'Credentials isn\'t specified'
     });
   }
@@ -46,6 +47,7 @@ router.post('/registration', function(req, res, next) {
     } else if(data) {
       return res.status(400).send({
         'success': false,
+        'errorCode': 1,
         'message': 'User already exist'
       });
     } else {
@@ -84,6 +86,7 @@ router.post('/login', function(req, res, next) {
     } else if(!data) {
       return res.status(400).send({
         'success': false,
+        'errorCode': 2,
         'message': 'User doesn\'t exists'
       });
     } else {
@@ -98,6 +101,7 @@ router.post('/login', function(req, res, next) {
         } else {
           return res.status(401).send({
             'success': false,
+            'errorCode': 3,
             'message': 'Incorrect password'
           });
         }
@@ -119,6 +123,7 @@ router.post('/login', function(req, res, next) {
       } else if(!curData) {
         return res.status(401).send({
           'success': false,
+          'errorCode': 2,
           'message': 'User doesn\'t exists'
         });
       } else {
@@ -126,6 +131,7 @@ router.post('/login', function(req, res, next) {
         if(curData.sha != oldKey.toString('hex')) {
           return res.status(401).send({
             'success': false,
+            'errorCode': 3,
             'message': 'Incorrect password'
           });
         } else {

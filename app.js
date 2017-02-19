@@ -4,6 +4,7 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 
 var dictionary = require('./routes/dictionary');
+var quiz = require('./routes/quiz');
 var authentication = require('./routes/authentication');
 var profile = require('./routes/profile');
 var logout = require('./routes/logout');
@@ -29,6 +30,7 @@ app.options('*', function(req, res) {
 
 app.use('/authenticate', authentication);
 app.use('/dictionary', authorization, dictionary);
+app.use('/quiz', authorization, quiz);
 app.use('/profile', authorization, profile);
 app.use('/logout', authorization, logout);
 

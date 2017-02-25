@@ -1,10 +1,12 @@
 var router = require('express').Router();
-var dbUrl = require('../config').dbUrl;
+var config = require('../config');
+var dbUrl = config.dbUrl;
+var supportedLang = config.languages.split(',');
 var mongojs = require('mongojs');
 var db = mongojs(dbUrl + 'dictionary');
 
 router.get('/:lang', function(req, res, next) {
-  if(req.params.lang !== 'en') {
+  if(supportedLang.indexOf(req.params.lang) === -1) {
     return res.status(400).send({
       'success': false,
       'message': 'Not supported language'

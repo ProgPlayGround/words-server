@@ -7,6 +7,7 @@ var dictionary = require('./routes/dictionary');
 var quiz = require('./routes/quiz');
 var authentication = require('./routes/authentication');
 var profile = require('./routes/profile');
+var sprint = require('./routes/sprint');
 var logout = require('./routes/logout');
 
 var authorization = require('./common/authorization');
@@ -32,6 +33,7 @@ app.use('/authenticate', authentication);
 app.use('/dictionary', authorization, dictionary);
 app.use('/quiz', authorization, quiz);
 app.use('/profile', authorization, profile);
+app.use('/sprint', authorization, sprint);
 app.use('/logout', authorization, logout);
 
 // catch 404 and forward to error handler

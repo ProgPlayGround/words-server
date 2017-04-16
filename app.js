@@ -9,6 +9,7 @@ var authentication = require('./routes/authentication');
 var profile = require('./routes/profile');
 var sprint = require('./routes/sprint');
 var logout = require('./routes/logout');
+var translation = require('./routes/translation');
 
 var authorization = require('./common/authorization');
 
@@ -35,6 +36,7 @@ app.use('/quiz', authorization, quiz);
 app.use('/profile', authorization, profile);
 app.use('/sprint', authorization, sprint);
 app.use('/logout', authorization, logout);
+app.use('/translation', authorization, translation);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

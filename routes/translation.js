@@ -2,7 +2,6 @@ var router = require('express').Router();
 var Translate = require('@google-cloud/translate');
 
 function translateText (input, target) {
-
   var translate = Translate();
   return translate.translate(input, target)
     .then(function(results) {

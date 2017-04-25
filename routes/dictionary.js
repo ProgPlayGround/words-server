@@ -36,9 +36,7 @@ router.get('/', function(req, res, next) {
 router.patch('/', function(req, res, next) {
   db.collection('dictionary').findOne({word: req.body.word}, {_id:1, translation:1}, function(err, data) {
     if(err) {
-      res.status(500).send({
-        err
-      });
+      throw err;
     } else if(!data) {
       res.status(404).send({
         'err': 'word doesn\'t exist'
@@ -76,16 +74,12 @@ router.post('/', function(req, res, next) {
 
   db.collection('dictionary').findOne({word: req.body.word}, {_id:0}, function(err, data) {
     if(err) {
-      res.status(500).send({
-        err
-      });
+      throw err;
     } else if(data) {
       res.status(200).send(data);
     } else {
       getSpeech(req.body.word, function(err) {
-          res.status(500).send({
-            err
-          });
+        throw err;
       }, function(audio) {
         s3.putObject({
           Bucket: config.s3BucketName,
@@ -93,9 +87,8 @@ router.post('/', function(req, res, next) {
           Body: audio.AudioStream
         }, function(err, s3Response) {
           if (err) {
-            res.send(err);
+            throw err;
          } else {
-
            var url = 'https://' + config.s3Server + '.amazonaws.com/' + config.s3BucketName + '/' + req.body.word;
            var wordCard = {
              'word': req.body.word,
@@ -112,6 +105,42 @@ router.post('/', function(req, res, next) {
          }
        });
       });
+    }
+  });
+});
+
+router.delete('/:word/:translation', function(req, res, next) {
+  db.collection('dictionary').findOne({word: req.params.word}, {_id:1, translation: 1}, function(err, data) {
+    if(err) {
+      throw err;
+    } else if(!data) {
+      return res.status(400).json({
+        'success': false,
+        'err': 'Word isn\'t present in dictionary'
+      });
+    } else {
+      var index = data.translation.indexOf(req.params.translation);
+      if(index !== -1) {
+        data.translation.splice(index, 1);
+        db.collection('dictionary').update({'_id': data._id}, {
+          $set: {
+            'translation': data.translation
+          }
+        }, function(err, result) {
+          if(err) {
+            throw err;
+          } else {
+            return res.status(200).json({
+              'success': true
+            });
+          }
+        });
+      } else {
+        return res.status(400).json({
+          'success': false,
+          'err': 'Translation isn\'t bound with the word'
+        });
+      }
     }
   });
 });

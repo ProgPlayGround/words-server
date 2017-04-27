@@ -145,4 +145,20 @@ router.delete('/:word/:translation', function(req, res, next) {
   });
 });
 
+router.delete('/:word', function(req, res, next) {
+  db.collection('dictionary').remove({word: req.params.word}, function(err, data) {
+    if(err) {
+      throw err;
+    } else if(data) {
+      res.status(200).json({
+        'success': data.n > 0 ? true : false
+      });
+    } else {
+      res.status(500).json({
+        'success': false
+      });
+    }
+  });
+});
+
 module.exports = router;

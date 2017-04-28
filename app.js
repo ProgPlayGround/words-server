@@ -10,7 +10,7 @@ var profile = require('./routes/profile');
 var sprint = require('./routes/sprint');
 var logout = require('./routes/logout');
 var translation = require('./routes/translation');
-
+var image = require('./routes/image');
 var authorization = require('./common/authorization');
 
 var app = express();
@@ -37,6 +37,7 @@ app.use('/profile', authorization, profile);
 app.use('/sprint', authorization, sprint);
 app.use('/logout', authorization, logout);
 app.use('/translation', authorization, translation);
+app.use('/image', authorization, image);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

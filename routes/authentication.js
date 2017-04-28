@@ -3,22 +3,23 @@ var crypto = require('crypto');
 var mongojs = require('mongojs');
 var jwt = require('jsonwebtoken');
 var config = require('../config');
+var securityConfig = require('../config-security');
 var db = mongojs(config.dbUrl + 'users');
 
 function decodeCredentials(salt, password, callback) {
-  var withSecret = salt + config.secret;
+  var withSecret = salt + securityConfig.secret;
   crypto.pbkdf2(password, withSecret, 10000, 512, 'sha512', callback);
 }
 
 function decodeCredentialsSync(salt, password) {
-  var withSecret = salt + config.secret;
+  var withSecret = salt + securityConfig.secret;
   return crypto.pbkdf2Sync(password, withSecret, 10000, 512, 'sha512');
 }
 
 function createJsonWebToken(object) {
   var expires = new Date();
   object.expires = expires.setMinutes(expires.getMinutes() + 65);
-  return jwt.sign(object, config.jwtSecret, {
+  return jwt.sign(object, securityConfig.jwtSecret, {
     expiresIn: '1h'
   });
 }

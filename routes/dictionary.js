@@ -2,8 +2,16 @@ var router = require('express').Router();
 var mongojs = require('mongojs');
 
 var aws = require('aws-sdk');
+
 var config = require('../config');
+var configSecurity = require('../config-security');
 var db = mongojs(config.dbUrl + 'dictionary');
+
+var Flickr = require("flickrapi"),
+flickrConfig = {
+    api_key: configSecurity.flickrKey,
+    secret: configSecurity.flickrSecret
+};
 
 var Polly = new aws.Polly({
     signatureVersion: config.pollySignatureVersion,
@@ -25,7 +33,6 @@ function getSpeech(word, error, success) {
     }
   });
 }
-
 
 router.get('/', function(req, res, next) {
   db.collection('dictionary').find({}, {_id:0}).toArray(function(err, data) {
@@ -104,6 +111,17 @@ router.post('/', function(req, res, next) {
            res.send(wordCard);
          }
        });
+      });
+      Flickr.tokenOnly(flickrConfig, function(err, flickrObj) {
+        flickr.photos.search({
+          text: "red+panda"
+        }, function(err, result) {
+          if(err) {
+             throw new Error(err);
+          } else {
+            console.log(result);
+          }
+        });
       });
     }
   });

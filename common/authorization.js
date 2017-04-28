@@ -1,6 +1,6 @@
 var mongojs = require('mongojs');
 var jwt = require('jsonwebtoken');
-var config = require('../config');
+var configSecurity = require('../config-security');
 var redisClient = require('../common/redisConnection');
 var https = require('https');
 var crypto = require('crypto');
@@ -27,7 +27,7 @@ var auth = {
     var login = credentials[0];
     token = credentials[1];
     if(login && token) {
-      jwt.verify(token, config.jwtSecret, function(err, decoded) {
+      jwt.verify(token, configSecurity.jwtSecret, function(err, decoded) {
         if(err) {
           throw err;
         } else if(decoded.name != login) {
@@ -63,7 +63,7 @@ var auth = {
   fb: function(token, res, next) {
     https.request({
       host:'graph.facebook.com',
-      path: '/debug_token?input_token=' + token + '&access_token=' + config.fbToken,
+      path: '/debug_token?input_token=' + token + '&access_token=' + configSecurity.fbToken,
       method: 'GET'
     }, function(fbRes) {
       if(fbRes.statusCode == 200) {
@@ -83,7 +83,7 @@ var auth = {
   },
   vk: function(token, res, next) {
     var keys = token.split('&');
-    var md5 = crypto.createHash('md5').update(keys[0] + config.vkSecret).digest('hex');
+    var md5 = crypto.createHash('md5').update(keys[0] + configSecurity.vkSecret).digest('hex');
     if(md5 === keys[1]) {
       next();
     } else {

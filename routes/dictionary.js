@@ -1,38 +1,18 @@
 var router = require('express').Router();
 var mongojs = require('mongojs');
 
-var aws = require('aws-sdk');
-
 var config = require('../config');
 var configSecurity = require('../config-security');
 var db = mongojs(config.dbUrl + 'dictionary');
+
+var getSpeech = require('../common/audio');
+var storage = require('../common/storage');
 
 var Flickr = require("flickrapi"),
 flickrConfig = {
     api_key: configSecurity.flickrKey,
     secret: configSecurity.flickrSecret
 };
-
-var Polly = new aws.Polly({
-    signatureVersion: config.pollySignatureVersion,
-    region: config.pollyServer
-});
-
-var s3 = new aws.S3();
-
-function getSpeech(word, error, success) {
-  Polly.synthesizeSpeech({
-      'Text': word,
-      'OutputFormat': config.pollyAudioFormat,
-      'VoiceId': config.pollyVoice
-  }, function(err, data) {
-    if (data) {
-      success(data);
-    } else {
-      error(err);
-    }
-  });
-}
 
 router.get('/', function(req, res, next) {
   db.collection('dictionary').find({}, {_id:0}).toArray(function(err, data) {
@@ -88,41 +68,31 @@ router.post('/', function(req, res, next) {
       getSpeech(req.body.word, function(err) {
         throw err;
       }, function(audio) {
-        s3.putObject({
-          Bucket: config.s3BucketName,
-          Key: req.body.word,
-          Body: audio.AudioStream
-        }, function(err, s3Response) {
-          if (err) {
-            throw err;
-         } else {
-           var url = 'https://' + config.s3Server + '.amazonaws.com/' + config.s3BucketName + '/' + req.body.word;
-           var wordCard = {
-             'word': req.body.word,
-             'translation': [req.body.translation],
-             'audioUrl': url
-           };
-
-           db.collection('dictionary').insert(wordCard, function(err, data) {
-             if(err) {
-               console.log(err);
-             }
-           });
-           res.send(wordCard);
-         }
-       });
-      });
-      Flickr.tokenOnly(flickrConfig, function(err, flickrObj) {
-        flickr.photos.search({
-          text: "red+panda"
-        }, function(err, result) {
-          if(err) {
-             throw new Error(err);
-          } else {
-            console.log(result);
-          }
+        storage(req.body.word, audio.AudioStream, function(url) {
+          var wordCard = {
+            'word': req.body.word,
+            'translation': [req.body.translation],
+            'audioUrl': url
+          };
+          db.collection('dictionary').insert(wordCard, function(err, data) {
+            if(err) {
+              console.log(err);
+            }
+          });
+          res.send(wordCard);
         });
       });
+      // Flickr.tokenOnly(flickrConfig, function(err, flickr) {
+      //   flickr.photos.search({
+      //     text: "red+panda"
+      //   }, function(err, result) {
+      //     if(err) {
+      //        throw new Error(err);
+      //     } else {
+      //       console.log(result);
+      //     }
+      //   });
+      // });
     }
   });
 });

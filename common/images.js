@@ -6,10 +6,6 @@ flickrConfig = {
     secret: configSecurity.flickrSecret
 };
 
-//init
-Flickr.tokenOnly(flickrConfig, function(err, flickr) {
-});
-
 var Q = require('q');
 
 module.exports = function(word) {

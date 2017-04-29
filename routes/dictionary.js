@@ -65,22 +65,25 @@ router.post('/', function(req, res, next) {
     } else if(data) {
       res.status(200).send(data);
     } else {
-      getSpeech(req.body.word, function(err) {
-        throw err;
-      }, function(audio) {
-        storage(req.body.word, audio.AudioStream, function(url) {
-          var wordCard = {
-            'word': req.body.word,
-            'translation': [req.body.translation],
-            'audioUrl': url
-          };
-          db.collection('dictionary').insert(wordCard, function(err, data) {
-            if(err) {
-              console.log(err);
-            }
-          });
-          res.send(wordCard);
+      getSpeech(req.body.word)
+      .then(function(audio) {
+        return storage(req.body.word, audio);
+      })
+      .then(function(url) {
+        var wordCard = {
+          'word': req.body.word,
+          'translation': [req.body.translation],
+          'audioUrl': url
+        };
+        db.collection('dictionary').insert(wordCard, function(err, data) {
+          if(err) {
+            console.log(err);
+          }
         });
+        res.send(wordCard);
+      })
+      .catch(function(err) {
+        throw err;
       });
       // Flickr.tokenOnly(flickrConfig, function(err, flickr) {
       //   flickr.photos.search({

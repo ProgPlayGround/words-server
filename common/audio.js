@@ -5,18 +5,20 @@ var Polly = new aws.Polly({
     region: config.pollyServer
 });
 
+var Q = require('q');
 
-
-module.exports = function getSpeech(word, error, success) {
-  Polly.synthesizeSpeech({
+module.exports = function getSpeech(word) {
+  return Q.Promise(function(resolve, reject) {
+    Polly.synthesizeSpeech({
       'Text': word,
       'OutputFormat': config.pollyAudioFormat,
       'VoiceId': config.pollyVoice
   }, function(err, data) {
     if (data) {
-      success(data);
+      resolve(data.AudioStream);
     } else {
-      error(err);
+      reject(err);
     }
+    });
   });
-}
+};

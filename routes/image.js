@@ -22,7 +22,7 @@ router.get('/:word', function(req, res, next) {
           if(err) {
             throw err;
           }
-          res.status(200).json({
+          return res.status(200).json({
             'success': true,
             'data': photos.sizes.size[0].source
           });

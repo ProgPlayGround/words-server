@@ -7,7 +7,7 @@ var db = mongojs(dbUrl + 'dictionary');
 
 router.get('/:lang', function(req, res, next) {
   if(supportedLang.indexOf(req.params.lang) === -1) {
-    return res.status(400).send({
+    return res.status(404).send({
       'success': false,
       'message': 'Not supported language'
     });

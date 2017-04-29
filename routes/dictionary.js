@@ -22,6 +22,7 @@ router.patch('/', function(req, res, next) {
       throw err;
     } else if(!data) {
       res.status(404).send({
+        'success': false,
         'err': 'word doesn\'t exist'
       });
     } else {
@@ -42,7 +43,8 @@ router.patch('/', function(req, res, next) {
         });
       } else {
         return res.status(409).json({
-          'success': false
+          'success': false,
+          'err': 'translation was already present'
         });
       }
     }
@@ -80,9 +82,6 @@ router.post('/', function(req, res, next) {
             res.send(wordCard);
           }
         });
-      })
-      .catch(function(err) {
-        throw err;
       });
     }
   });
@@ -93,7 +92,7 @@ router.delete('/:word/:translation', function(req, res, next) {
     if(err) {
       throw err;
     } else if(!data) {
-      return res.status(400).json({
+      return res.status(404).json({
         'success': false,
         'err': 'Word isn\'t present in dictionary'
       });
@@ -133,8 +132,9 @@ router.delete('/:word', function(req, res, next) {
         'success': data.n > 0 ? true : false
       });
     } else {
-      res.status(500).json({
-        'success': false
+      res.status(404).send({
+        'success': false,
+        'err': 'word doesn\'t exist'
       });
     }
   });

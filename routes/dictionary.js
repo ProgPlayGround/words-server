@@ -2,17 +2,13 @@ var router = require('express').Router();
 var mongojs = require('mongojs');
 
 var config = require('../config');
-var configSecurity = require('../config-security');
 var db = mongojs(config.dbUrl + 'dictionary');
 
 var getSpeech = require('../common/audio');
 var storage = require('../common/storage');
+var images = require('../common/images');
 
-var Flickr = require("flickrapi"),
-flickrConfig = {
-    api_key: configSecurity.flickrKey,
-    secret: configSecurity.flickrSecret
-};
+var Q = require('q');
 
 router.get('/', function(req, res, next) {
   db.collection('dictionary').find({}, {_id:0}).toArray(function(err, data) {
@@ -65,37 +61,29 @@ router.post('/', function(req, res, next) {
     } else if(data) {
       res.status(200).send(data);
     } else {
-      getSpeech(req.body.word)
+      var speech = getSpeech(req.body.word)
       .then(function(audio) {
         return storage(req.body.word, audio);
-      })
-      .then(function(url) {
+      });
+      Q.allSettled([speech, images(req.body.word)])
+      .then(function(result) {
         var wordCard = {
           'word': req.body.word,
           'translation': [req.body.translation],
-          'audioUrl': url
+          'audioUrl': result[0].value,
+          'imageUrl': result[1].value
         };
         db.collection('dictionary').insert(wordCard, function(err, data) {
           if(err) {
-            console.log(err);
+            throw err;
+          } else {
+            res.send(wordCard);
           }
         });
-        res.send(wordCard);
       })
       .catch(function(err) {
         throw err;
       });
-      // Flickr.tokenOnly(flickrConfig, function(err, flickr) {
-      //   flickr.photos.search({
-      //     text: "red+panda"
-      //   }, function(err, result) {
-      //     if(err) {
-      //        throw new Error(err);
-      //     } else {
-      //       console.log(result);
-      //     }
-      //   });
-      // });
     }
   });
 });

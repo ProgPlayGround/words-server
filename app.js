@@ -37,7 +37,7 @@ app.use('/profile', authorization, profile);
 app.use('/sprint', authorization, sprint);
 app.use('/logout', authorization, logout);
 app.use('/translation', authorization, translation);
-app.use('/image', image);
+app.use('/image', authorization, image);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

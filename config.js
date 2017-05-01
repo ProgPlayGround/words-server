@@ -7,5 +7,7 @@ module.exports = {
   'pollyVoice': 'Joanna',
   'pollyAudioFormat': 'mp3',
   's3Server': 's3-us-west-1',
-  's3BucketName': 'words-bucket'
+  's3BucketName': 'words-bucket',
+  's3ImgBucket': 'user-loaded-images',
+  'maxFileSize' : 100000
 }

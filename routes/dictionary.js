@@ -65,7 +65,7 @@ router.post('/', function(req, res, next) {
     } else {
       var speech = getSpeech(req.body.word)
       .then(function(audio) {
-        return storage(req.body.word, audio);
+        return storage(req.body.word, config.s3BucketName, audio);
       });
       Q.allSettled([speech, images(req.body.word)])
       .then(function(result) {

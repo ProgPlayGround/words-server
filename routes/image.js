@@ -1,8 +1,11 @@
 var router = require('express').Router();
-
 var config = require('../config');
 var configSecurity = require('../config-security');
+
+var mongojs = require('mongojs');
 var storage = require('../common/storage');
+var db = mongojs(config.dbUrl + 'dictionary');
+
 var multer = require('multer');
 var upload = multer({
   storage: multer.memoryStorage(),
@@ -16,6 +19,7 @@ flickrConfig = {
     api_key: configSecurity.flickrKey,
     secret: configSecurity.flickrSecret
 };
+
 
 router.get('/:word', function(req, res, next) {
   Flickr.tokenOnly(flickrConfig, function(err, flickr) {
@@ -43,15 +47,34 @@ router.get('/:word', function(req, res, next) {
 });
 
 router.post('/:word', upload.any(), function(req, res, next) {
-  storage(req.params.word, config.s3ImgBucket, req.files[0].buffer)
-  .then(function(response) {
-    console.log(response);
-    return res.status(200).json({
-      'success': true,
-      'url': response
-    });
+  db.collection('dictionary').findOne({word: req.params.word}, {_id:1}, function(err, data) {
+    if(err) {
+      throw err;
+    } else if(!data) {
+      res.status(404).send({
+        'success': false,
+        'err': 'word doesn\'t exist'
+      });
+    } else {
+      storage(req.params.word, config.s3ImgBucket, req.files[0].buffer)
+      .then(function(response) {
+        db.collection('dictionary').update({'_id': data._id}, {
+          $set: {
+            'imageUrl': response
+          }
+        }, function(err, result) {
+          if(err) {
+            throw err;
+          } else {
+            return res.status(200).json({
+              'success': true,
+              'url': response
+            });
+          }
+        });
+      });
+    }
   });
-
 });
 
 module.exports = router;

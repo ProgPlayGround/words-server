@@ -56,7 +56,7 @@ router.post('/:word', upload.any(), function(req, res, next) {
         'err': 'word doesn\'t exist'
       });
     } else {
-      storage(req.params.word, config.s3ImgBucket, req.files[0].buffer)
+      storage.upload(req.params.word, config.s3ImgBucket, req.files[0].buffer)
       .then(function(response) {
         db.collection('dictionary').update({'_id': data._id}, {
           $set: {

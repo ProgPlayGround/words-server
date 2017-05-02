@@ -63,10 +63,13 @@ router.post('/', function(req, res, next) {
     } else if(data) {
       res.status(200).send(data);
     } else {
-      var speech = getSpeech(req.body.word)
-      .then(function(audio) {
-        return storage(req.body.word, config.s3BucketName, audio);
+      var speech = storage.get(req.body.word, config.s3BucketName)
+      .catch(function(err) {
+        return getSpeech(req.body.word).then(function(audio) {
+          return storage.upload(req.body.word, config.s3BucketName, audio);
+        });
       });
+
       Q.allSettled([speech, images(req.body.word)])
       .then(function(result) {
         var wordCard = {

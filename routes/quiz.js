@@ -11,7 +11,7 @@ router.get('/:lang', function(req, res, next) {
       'message': 'Not supported language'
     });
   }
-  db.collection('translation_' + req.params.lang).find({}, {_id:0}).toArray(function(err, data) {
+  db.collection('quiz_' + req.params.lang).find({}, {_id:0}).toArray(function(err, data) {
     res.send(data);
   });
 });

@@ -1,6 +1,6 @@
 
 module.exports = {
-  'dbUrl': 'mongodb://' + process.env.HOST + ':27017/',
+  'dbUrl': 'mongodb://' + process.env.HOST + ':27017/words',
   'languages': 'en,ua',
   'pollyServer': 'us-east-1',
   'pollySignatureVersion': 'v4',

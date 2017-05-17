@@ -4,7 +4,7 @@ var configSecurity = require('../config-security');
 
 var mongojs = require('mongojs');
 var storage = require('../common/storage');
-var db = mongojs(config.dbUrl + 'dictionary');
+var db = mongojs(config.dbUrl);
 
 var multer = require('multer');
 var upload = multer({

@@ -1,5 +1,5 @@
 var aws = require('aws-sdk');
-var config = require('../config');
+var s3Server = require('../config').s3Server;
 var s3 = new aws.S3();
 
 var Q = require('q');
@@ -15,7 +15,7 @@ module.exports = {
           if (err) {
             reject(err);
          } else {
-           var url = 'https://' + config.s3Server + '.amazonaws.com/' + bucket + '/' + word;
+           var url = 'https://' + s3Server + '.amazonaws.com/' + bucket + '/' + word;
            resolve(url);
          }
         });
@@ -30,7 +30,7 @@ module.exports = {
         if (err) {
           reject(err);
         } else {
-          var url = 'https://' + config.s3Server + '.amazonaws.com/' + bucket + '/' + word;
+          var url = 'https://' + s3Server + '.amazonaws.com/' + bucket + '/' + word;
           resolve(url);
         }
       });

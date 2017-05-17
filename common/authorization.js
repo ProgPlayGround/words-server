@@ -1,4 +1,3 @@
-var mongojs = require('mongojs');
 var jwt = require('jsonwebtoken');
 var configSecurity = require('../config-security');
 var redisClient = require('../common/redisConnection');

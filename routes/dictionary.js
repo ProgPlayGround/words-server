@@ -2,7 +2,7 @@ var router = require('express').Router();
 var mongojs = require('mongojs');
 
 var config = require('../config');
-var db = mongojs(config.dbUrl + 'dictionary');
+var db = mongojs(config.dbUrl);
 
 var getSpeech = require('../common/audio');
 var storage = require('../common/storage');

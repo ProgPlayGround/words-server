@@ -12,5 +12,11 @@
 
 # For Docker:
 
-docker build -t ap/words-server .
-docker run --env HOST=192.168.99.101 -p 49160:3000 -d ap/words-server
+1. docker-machine.exe start words-server
+2. docker-machine.exe env words-server
+3. docker run --name redis -d --restart=always --publish 6379:6379 --volume /srv/docker/redis:/var/lib/redis redis:latest --appendonly yes
+4. docker run -p 27017:27017 --name mongo -d mongo
+5. docker build -t ap/words-server .
+6. docker run --env HOST=192.168.99.101 -p 49160:3000 -d ap/words-server
+7. docker rm $(docker ps -aq)
+8. docker exec -it mongo bash

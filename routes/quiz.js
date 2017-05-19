@@ -1,8 +1,8 @@
 var router = require('express').Router();
-var dbUrl = require('../config').dbUrl;
+var config = require('../config');
 var supportedLang = config.languages.split(',');
 var mongojs = require('mongojs');
-var db = mongojs(dbUrl);
+var db = mongojs(config.dbUrl);
 
 router.get('/:lang', function(req, res, next) {
   if(supportedLang.indexOf(req.params.lang) === -1) {

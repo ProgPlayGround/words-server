@@ -17,6 +17,7 @@
 3. docker run --name redis -d --restart=always --publish 6379:6379 --volume /srv/docker/redis:/var/lib/redis redis:latest --appendonly yes
 4. docker run -p 27017:27017 --name mongo -d mongo
 5. docker build -t ap/words-server .
-6. docker run --name words --env HOST=192.168.99.101 -e "HOME=/home" -v $HOME/.aws:/home/.aws -p 49160:3000 -d ap/words-server
+6. docker run --name words -e HOST=192.168.99.101 -e "HOME=/home" -e "GCLOUD_PROJECT=quiz" -e "GOOGLE_APPLICATION_CREDENTIALS=/home/config/quiz-gcloud.json" -v $HOME/.aws:/home/.aws -p 49160:3000 -v $HOME/config:/home/config -d ap/words-server
 7. docker rm $(docker ps -aq)
 8. docker exec -it mongo bash
+9. docker inspect words

@@ -10,7 +10,7 @@ function translateText (input, target) {
 };
 
 router.get('/:word', function(req, res, next) {
-  translateText(req.params.word, 'ru').then(function(translation) {
+  translateText(req.params.word, 'uk').then(function(translation) {
     res.status(200).json([
       translation
     ]);

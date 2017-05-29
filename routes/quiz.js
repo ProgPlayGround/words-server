@@ -40,13 +40,13 @@ router.get('/:lang', function(req, res, next) {
       });
     } else {
       var answers = data.map(function(elem) {
-        return elem.translation[0];
+        return req.params.lang === 'en' ? elem.translation[0] : elem.word;
       });
       var quiz = data.map(function(elem) {
         return {
-          "word": elem.word,
-          "answer": elem.translation[0],
-          "options": getOptions(answers, elem.translation[0])
+          'word': req.params.lang === 'en' ? elem.word : elem.translation[0],
+          'answer': req.params.lang === 'en' ? elem.translation[0] : elem.word,
+          'options': getOptions(answers, req.params.lang === 'en' ? elem.translation[0] : elem.word)
         }
       });
       return res.send(quiz);

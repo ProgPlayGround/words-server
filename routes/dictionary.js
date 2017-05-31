@@ -7,6 +7,7 @@ var db = mongojs(config.dbUrl);
 var getSpeech = require('../common/audio');
 var storage = require('../common/storage');
 var images = require('../common/images');
+var examples = require('../common/examples');
 
 var Q = require('q');
 
@@ -70,13 +71,15 @@ router.post('/', function(req, res, next) {
         });
       });
 
-      Q.allSettled([speech, images(req.body.word)])
+      Q.allSettled([speech, images(req.body.word), examples(req.body.word)])
       .then(function(result) {
+        console.log(result);
         var wordCard = {
           'word': req.body.word,
           'translation': [req.body.translation],
           'audioUrl': result[0].value,
-          'imageUrl': result[1].value
+          'imageUrl': result[1].value,
+          'definitions': result[2].value
         };
         db.collection('dictionary').insert(wordCard, function(err, data) {
           if(err) {

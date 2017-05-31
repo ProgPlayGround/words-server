@@ -79,7 +79,7 @@ router.post('/', function(req, res, next) {
           'translation': [req.body.translation],
           'audioUrl': result[0].value,
           'imageUrl': result[1].value,
-          'definitions': result[2].value
+          'examples': result[2].value
         };
         db.collection('dictionary').insert(wordCard, function(err, data) {
           if(err) {

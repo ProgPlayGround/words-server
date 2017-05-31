@@ -73,13 +73,12 @@ router.post('/', function(req, res, next) {
 
       Q.allSettled([speech, images(req.body.word), examples(req.body.word)])
       .then(function(result) {
-        console.log(result);
         var wordCard = {
           'word': req.body.word,
           'translation': [req.body.translation],
           'audioUrl': result[0].value,
           'imageUrl': result[1].value,
-          'examples': result[2].value
+          'samples': result[2].value
         };
         db.collection('dictionary').insert(wordCard, function(err, data) {
           if(err) {

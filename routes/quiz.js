@@ -5,6 +5,19 @@ var mongojs = require('mongojs');
 var db = mongojs(config.dbUrl);
 
 function getOptions(answers, correct) {
+  return shuffleOptions(answers.length < 4 ? handleNotEnoughAnswers(answers) : prepareOptions(answers, correct));
+}
+
+function handleNotEnoughAnswers(answers) {
+  var options = [];
+  var pos = 0;
+  do {
+    options[pos] = answers[pos < answers.length ? pos : answers.length - 1];
+  } while(++pos < 4);
+  return options;
+}
+
+function prepareOptions(answers, correct) {
   var options = [correct];
   var pos = 1;
   do {
@@ -13,8 +26,7 @@ function getOptions(answers, correct) {
       options[pos++] = answers[index];
     }
   } while(pos < 4);
-
-  return shuffleOptions(options);
+  return options;
 }
 
 function shuffleOptions(options) {
@@ -37,6 +49,11 @@ router.get('/:lang', function(req, res, next) {
       return res.status(500).send({
         'success': false,
         'message': err
+      });
+    } else if(data.length === 0) {
+      return res.status(204).send({
+        'success': true,
+        'message': 'Missing data'
       });
     } else {
       var answers = data.map(function(elem) {

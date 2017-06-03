@@ -29,7 +29,8 @@ router.get('/', function(req, res, next) {
 
         return {
           'word': elem.word,
-          'translation': answer
+          'translation': elem.translation,
+          'guess': answer
         };
       });
       return res.send(questions);

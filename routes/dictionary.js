@@ -11,14 +11,14 @@ var examples = require('../common/examples');
 
 var Q = require('q');
 
-router.get('/', function(req, res, next) {
-  db.collection('dictionary').find({}, {_id:0}).toArray(function(err, data) {
+router.get('/:category', function(req, res, next) {
+  db.collection('dictionary').find({category: req.params.category}, {_id:0}).toArray(function(err, data) {
     res.send(data);
   });
 });
 
-router.patch('/', function(req, res, next) {
-  db.collection('dictionary').findOne({word: req.body.word}, {_id:1, translation:1}, function(err, data) {
+router.patch('/:category', function(req, res, next) {
+  db.collection('dictionary').findOne({word: req.body.word, category: req.params.category}, {_id:1, translation:1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {
@@ -52,13 +52,13 @@ router.patch('/', function(req, res, next) {
   });
 });
 
-router.post('/', function(req, res, next) {
+router.post('/:category', function(req, res, next) {
   var word = {
     'word': req.body.word,
     'translation': req.body.translation
   };
 
-  db.collection('dictionary').findOne({word: req.body.word}, {_id:0}, function(err, data) {
+  db.collection('dictionary').findOne({word: req.body.word, category: req.params.category}, {_id:0}, function(err, data) {
     if(err) {
       throw err;
     } else if(data) {
@@ -75,6 +75,7 @@ router.post('/', function(req, res, next) {
       .then(function(result) {
         var wordCard = {
           'word': req.body.word,
+          'category': req.params.category,
           'translation': [req.body.translation],
           'audioUrl': result[0].value,
           'imageUrl': result[1].value,
@@ -92,8 +93,8 @@ router.post('/', function(req, res, next) {
   });
 });
 
-router.delete('/:word/:translation', function(req, res, next) {
-  db.collection('dictionary').findOne({word: req.params.word}, {_id:1, translation: 1}, function(err, data) {
+router.delete('/:category/:word/:translation', function(req, res, next) {
+  db.collection('dictionary').findOne({word: req.params.word, category: req.params.category}, {_id:1, translation: 1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {
@@ -128,8 +129,8 @@ router.delete('/:word/:translation', function(req, res, next) {
   });
 });
 
-router.delete('/:word', function(req, res, next) {
-  db.collection('dictionary').remove({word: req.params.word}, function(err, data) {
+router.delete('/:category/:word', function(req, res, next) {
+  db.collection('dictionary').remove({word: req.params.word, category: req.params.category}, function(err, data) {
     if(err) {
       throw err;
     } else if(data) {

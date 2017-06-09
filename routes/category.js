@@ -24,7 +24,7 @@ router.get('/:user', function(req, res, next) {
   });
 });
 
-router.post('/:user/', function(req, res, next) {
+router.post('/:user', function(req, res, next) {
   if(checkAccess(req, res)) {
     return res.status(401).json({
       'err': 'Not valid request'

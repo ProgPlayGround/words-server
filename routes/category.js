@@ -15,11 +15,12 @@ router.get('/:user', function(req, res, next) {
       'err': 'Not valid request'
     });
   }
-  db.collection('user').find({_id: mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}).toArray(function(err, data) {
+  db.collection('user').findOne({_id: mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
-      return res.send(data);
+      console.log(data);
+      return res.send(data.category);
     }
   });
 });

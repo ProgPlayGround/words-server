@@ -26,7 +26,9 @@ var auth = {
     var login = credentials[0];
     token = credentials[1];
     if(login && token) {
+      console.log(login, token);
       jwt.verify(token, configSecurity.jwtSecret, function(err, decoded) {
+        console.log(err);
         if(err) {
           throw err;
         } else if(decoded.name != login) {

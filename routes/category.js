@@ -38,7 +38,7 @@ router.post('/:user', function(req, res, next) {
         data.category = [];
       }
       if(data.category.indexOf(req.body.category) === -1) {
-        data.category.push(req.body.category);
+        data.category.push({'name': req.body.category});
         db.collection('user').update({'_id': mongojs.ObjectId(req.params.user)}, {
           $set: {
             'category': data.category

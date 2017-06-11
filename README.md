@@ -21,3 +21,4 @@
 7. docker rm $(docker ps -aq)
 8. docker exec -it mongo bash
 9. docker inspect words
+10. docker logs -f words

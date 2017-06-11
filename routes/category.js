@@ -15,7 +15,7 @@ router.get('/:user', function(req, res, next) {
       'err': 'Not valid request'
     });
   }
-  db.collection('user').find({_id: req.params.user}, {_id:0, category: 1}).toArray(function(err, data) {
+  db.collection('user').find({_id: mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}).toArray(function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -30,13 +30,16 @@ router.post('/:user', function(req, res, next) {
       'err': 'Not valid request'
     });
   }
-  db.collection('user').findOne({_id: req.params.user}, {_id:1, category: 1}, function(err, data) {
+  db.collection('user').findOne({'_id': mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
+      if(!data.category) {
+        data.category = [];
+      }
       if(data.category.indexOf(req.body.category) === -1) {
         data.category.push(req.body.category);
-        db.collection('profile').update({'_id': data._id}, {
+        db.collection('user').update({'_id': mongojs.ObjectId(req.params.user)}, {
           $set: {
             'category': data.category
           }
@@ -65,7 +68,7 @@ router.delete('/:user/:category', function(req, res, next) {
       'err': 'Not valid request'
     });
   }
-  db.collection('user').update({_id: req.params.user}, {$pull: {'category': req.params.category}},
+  db.collection('user').update({_id: mongojs.ObjectId(req.params.user)}, {$pull: {'category': req.params.category}},
    function(err, data) {
     if(err) {
       throw err;

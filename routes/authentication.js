@@ -25,21 +25,21 @@ function createJsonWebToken(object) {
 }
 
 function validateCredentials(req, res) {
-  if(!req.body.username || !req.body.password) {
+  return (!req.body.email || !req.body.password);
+}
+
+router.post('/registration', function(req, res, next) {
+
+  if(validateCredentials(req, res)) {
     return res.status(400).send({
       'success': false,
       'errorCode': 0,
       'message': 'Credentials isn\'t specified'
     });
   }
-}
-
-router.post('/registration', function(req, res, next) {
-
-  validateCredentials(req, res);
 
   var user = {
-    '_id': req.body.username
+    'email': req.body.email
   };
 
   db.collection('user').findOne(user, function(err, data) {
@@ -59,13 +59,14 @@ router.post('/registration', function(req, res, next) {
         } else {
           user.sha = key.toString('hex');
           user.salt = salt;
-          db.collection('user').insert(user, function(err, data) {
+          db.collection('user').insert(user, function(err, obj) {
             if(err) {
               throw err;
             } else {
               return res.status(200).json({
                 'success': true,
-                'token': createJsonWebToken({'name': user._id})
+                'userId': obj._id,
+                'token': createJsonWebToken({'name': obj._id})
               });
             }
           });
@@ -77,9 +78,15 @@ router.post('/registration', function(req, res, next) {
 
 router.post('/login', function(req, res, next) {
 
-  validateCredentials(req, res);
+  if(validateCredentials(req, res)) {
+    return res.status(400).send({
+      'success': false,
+      'errorCode': 0,
+      'message': 'Credentials isn\'t specified'
+    });
+  }
 
-  var user = {'_id': req.body.username };
+  var user = {'email': req.body.email };
 
   db.collection('user').findOne(user, function(err, data) {
     if(err) {
@@ -97,7 +104,8 @@ router.post('/login', function(req, res, next) {
         } else if(data.sha == key.toString('hex')) {
           return res.status(200).json({
             'success': true,
-            'token': createJsonWebToken({'name': user._id})
+            'userId': data._id,
+            'token': createJsonWebToken({'name': data._id})
           });
         } else {
           return res.status(401).send({
@@ -112,17 +120,23 @@ router.post('/login', function(req, res, next) {
 
   router.post('/editPassword', function(req, res, next) {
 
-    validateCredentials(req, res);
+    if(validateCredentials(req, res)) {
+      return res.status(400).send({
+        'success': false,
+        'errorCode': 0,
+        'message': 'Credentials isn\'t specified'
+      });
+    }
 
     var user = {
-      '_id': req.body.username
+      'email': req.body.email
     };
 
     db.collection('user').findOne(user, function(err, curData) {
       if(err) {
         throw err;
       } else if(!curData) {
-        return res.status(401).send({
+        return res.status(400).send({
           'success': false,
           'errorCode': 2,
           'message': 'User doesn\'t exists'
@@ -150,7 +164,7 @@ router.post('/login', function(req, res, next) {
             } else {
               return res.status(200).json({
                 'success': true,
-                'token': createJsonWebToken({'username': user._id})
+                'token': createJsonWebToken({'name': curData._id})
               });
             }
           });

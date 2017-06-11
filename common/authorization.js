@@ -23,15 +23,15 @@ var auth = {
   basic: function(token, res, next) {
     var encoded = new Buffer(token, 'base64').toString('ascii');
     var credentials = encoded.split(':');
-    var login = credentials[0];
+    var userId = credentials[0];
     token = credentials[1];
-    if(login && token) {
-      console.log(login, token);
+    if(userId && token) {
+      console.log(userId, token);
       jwt.verify(token, configSecurity.jwtSecret, function(err, decoded) {
-        console.log(err);
         if(err) {
+          console.log(err);
           throw err;
-        } else if(decoded.name != login) {
+        } else if(decoded.name != userId) {
           res.status(403).send({
             'success': false,
             'message': 'Incorrect token'
@@ -48,7 +48,7 @@ var auth = {
             } else {
               res.locals.decoded = decoded;
               res.locals.token = token;
-              res.locals.user = login;
+              res.locals.user = userId;
               next();
             }
           });

@@ -19,7 +19,6 @@ router.get('/:user', function(req, res, next) {
     if(err) {
       throw err;
     } else {
-      console.log(data);
       return res.send(data.category);
     }
   });
@@ -69,7 +68,7 @@ router.delete('/:user/:category', function(req, res, next) {
       'err': 'Not valid request'
     });
   }
-  db.collection('user').update({_id: mongojs.ObjectId(req.params.user)}, {$pull: {'category': req.params.category}},
+  db.collection('user').update({_id: mongojs.ObjectId(req.params.user)}, {$pull: {'category': {'name': req.params.category}}},
    function(err, data) {
     if(err) {
       throw err;
@@ -82,7 +81,7 @@ router.delete('/:user/:category', function(req, res, next) {
         }
       });
       res.status(200).json({
-        'success': data.n > 0 ? true : false
+        'success': data.nModified > 0 ? true : false
       });
     }
   });

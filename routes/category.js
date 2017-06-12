@@ -37,7 +37,15 @@ router.post('/:user', function(req, res, next) {
       if(!data.category) {
         data.category = [];
       }
-      if(data.category.indexOf(req.body.category) === -1) {
+      var existingCategory = data.category.find(function(elem) {
+        return elem.name === req.body.category;
+      });
+      if(existingCategory) {
+        return res.status(409).json({
+          'success': false,
+          'err': 'category is already present'
+        });
+      } else {
         data.category.push({'name': req.body.category});
         db.collection('user').update({'_id': mongojs.ObjectId(req.params.user)}, {
           $set: {
@@ -51,11 +59,6 @@ router.post('/:user', function(req, res, next) {
               'success': true
             });
           }
-        });
-      } else {
-        return res.status(409).json({
-          'success': false,
-          'err': 'category is already present'
         });
       }
     }

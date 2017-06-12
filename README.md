@@ -9,7 +9,6 @@
 1. Create credentials in Users/CurrentUser/.aws;
 2. Add aws_access_key_id, aws_secret_access_key to credentials;
 
-
 # For Docker:
 
 1. docker-machine.exe start words-server

@@ -20,7 +20,6 @@ flickrConfig = {
     secret: configSecurity.flickrSecret
 };
 
-
 router.get('/:word', function(req, res, next) {
   Flickr.tokenOnly(flickrConfig, function(err, flickr) {
     flickr.photos.search({

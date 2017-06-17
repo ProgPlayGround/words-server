@@ -78,6 +78,7 @@ router.post('/:user/:category', function(req, res, next) {
       .then(function(result) {
         var wordCard = {
           'word': req.body.word,
+          'user': req.params.user,
           'category': req.params.category,
           'translation': [req.body.translation],
           'audioUrl': result[0].value,

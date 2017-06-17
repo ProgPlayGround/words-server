@@ -12,7 +12,7 @@ var logout = require('./routes/logout');
 var translation = require('./routes/translation');
 var image = require('./routes/image');
 var category = require('./routes/category');
-var authorization = require('./common/authorization');
+var security = require('./common/authorization');
 
 var app = express();
 
@@ -32,14 +32,14 @@ app.options('*', function(req, res) {
 });
 
 app.use('/authenticate', authentication);
-app.use('/dictionary', authorization, dictionary);
-app.use('/quiz', authorization, quiz);
-app.use('/profile', authorization, profile);
-app.use('/sprint', authorization, sprint);
-app.use('/logout', authorization, logout);
-app.use('/translation', authorization, translation);
-app.use('/image', authorization, image);
-app.use('/category', authorization, category);
+app.use('/dictionary', security.authorization, dictionary);
+app.use('/quiz', security.authorization, quiz);
+app.use('/profile', security.authorization, profile);
+app.use('/sprint', security.authorization, sprint);
+app.use('/logout', security.authorization, logout);
+app.use('/translation', security.authorization, translation);
+app.use('/image', security.authorization, image);
+app.use('/category', security.authorization, security.access, category);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

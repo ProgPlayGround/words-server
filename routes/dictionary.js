@@ -11,7 +11,7 @@ var examples = require('../common/examples');
 
 var Q = require('q');
 
-router.get('/:category', function(req, res, next) {
+router.get('/:user/:category', function(req, res, next) {
   db.collection('dictionary').find({category: req.params.category}, {_id:0}).toArray(function(err, data) {
     res.send(data);
   });

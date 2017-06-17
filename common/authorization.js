@@ -4,7 +4,7 @@ var redisClient = require('../common/redisConnection');
 var https = require('https');
 var crypto = require('crypto');
 
-function authorization(req, res, next) {
+function token(req, res, next) {
 
   var authType = req.headers['auth-type'];
   var token = req.headers['auth-token'];
@@ -15,6 +15,17 @@ function authorization(req, res, next) {
     return res.status(403).send({
       'success': false,
       'message': 'Incorect auth method'
+    });
+  }
+}
+
+function checkAccess(req, res, next) {
+  if(res.locals.user === req.params.user) {
+    next();
+  } else {
+    return res.status(403).json({
+      'success': false,
+      'err': 'You are prohibited from running request from this user'
     });
   }
 }
@@ -96,4 +107,7 @@ var auth = {
   }
 }
 
-module.exports = authorization;
+module.exports = {
+  authorization: token,
+  access: checkAccess
+};

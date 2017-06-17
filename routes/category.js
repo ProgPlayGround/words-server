@@ -18,16 +18,7 @@ var upload = multer({
 
 var Q = require('q');
 
-function checkAccess(req, res) {
-  return res.locals.user !== req.params.user;
-}
-
 router.get('/:user', function(req, res, next) {
-  if(checkAccess(req, res)) {
-    return res.status(401).json({
-      'err': 'Not valid request'
-    });
-  }
   db.collection('user').findOne({_id: mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
@@ -38,12 +29,6 @@ router.get('/:user', function(req, res, next) {
 });
 
 router.post('/:user/:category', upload.any(), function(req, res, next) {
-  if(checkAccess(req, res)) {
-    return res.status(401).json({
-      'success': false,
-      'err': 'Not valid request'
-    });
-  }
   db.collection('user').findOne({'_id': mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
@@ -60,7 +45,7 @@ router.post('/:user/:category', upload.any(), function(req, res, next) {
           'err': 'category is already present'
         });
       } else {
-        
+
         var promise = Q.fcall(function() {
           return {
             'name': req.params.category
@@ -105,11 +90,6 @@ router.post('/:user/:category', upload.any(), function(req, res, next) {
 });
 
 router.delete('/:user/:category', function(req, res, next) {
-  if(checkAccess(req, res)) {
-    return res.status(401).json({
-      'err': 'Not valid request'
-    });
-  }
   db.collection('user').update({_id: mongojs.ObjectId(req.params.user)}, {$pull: {'category': {'name': req.params.category}}},
    function(err, data) {
     if(err) {

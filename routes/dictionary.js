@@ -4,12 +4,15 @@ var mongojs = require('mongojs');
 var config = require('../config');
 var db = mongojs(config.dbUrl);
 
+var auth = require('../common/authorization');
 var getSpeech = require('../common/audio');
 var storage = require('../common/storage');
 var images = require('../common/images');
 var examples = require('../common/examples');
 
 var Q = require('q');
+
+router.param('user', auth.validateUser);
 
 router.get('/:user/:category', function(req, res, next) {
   db.collection('dictionary').find({user: req.params.user, category: req.params.category}, {_id:0}).toArray(function(err, data) {

@@ -5,6 +5,7 @@ var debug = require('debug')('words-server:category');
 var config = require('../config');
 var db = mongojs(config.dbUrl);
 
+var auth = require('../common/authorization');
 var storage = require('../common/storage');
 
 var multer = require('multer');
@@ -17,6 +18,8 @@ var upload = multer({
 });
 
 var Q = require('q');
+
+router.param('user', auth.validateUser);
 
 router.get('/:user', function(req, res, next) {
   db.collection('user').findOne({_id: mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {

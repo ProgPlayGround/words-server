@@ -19,7 +19,7 @@ function token(req, res, next) {
   }
 }
 
-function checkAccess(req, res, next) {
+function validateUser(req, res, next) {
   if(res.locals.user === req.params.user) {
     next();
   } else {
@@ -109,5 +109,5 @@ var auth = {
 
 module.exports = {
   authorization: token,
-  access: checkAccess
+  validateUser: validateUser
 };

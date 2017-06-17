@@ -12,13 +12,13 @@ var examples = require('../common/examples');
 var Q = require('q');
 
 router.get('/:user/:category', function(req, res, next) {
-  db.collection('dictionary').find({category: req.params.category}, {_id:0}).toArray(function(err, data) {
+  db.collection('dictionary').find({user: req.params.user, category: req.params.category}, {_id:0}).toArray(function(err, data) {
     res.send(data);
   });
 });
 
-router.patch('/:category', function(req, res, next) {
-  db.collection('dictionary').findOne({word: req.body.word, category: req.params.category}, {_id:1, translation:1}, function(err, data) {
+router.patch('/:user/:category', function(req, res, next) {
+  db.collection('dictionary').findOne({user: req.params.user, category: req.params.category, word: req.body.word}, {_id:1, translation:1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {
@@ -52,13 +52,13 @@ router.patch('/:category', function(req, res, next) {
   });
 });
 
-router.post('/:category', function(req, res, next) {
+router.post('/:user/:category', function(req, res, next) {
   var word = {
     'word': req.body.word,
     'translation': req.body.translation
   };
 
-  db.collection('dictionary').findOne({word: req.body.word, category: req.params.category}, {_id:0}, function(err, data) {
+  db.collection('dictionary').findOne({user: req.params.user, category: req.params.category, word: req.body.word}, {_id:0}, function(err, data) {
     if(err) {
       throw err;
     } else if(data) {
@@ -93,8 +93,8 @@ router.post('/:category', function(req, res, next) {
   });
 });
 
-router.delete('/:category/:word/:translation', function(req, res, next) {
-  db.collection('dictionary').findOne({word: req.params.word, category: req.params.category}, {_id:1, translation: 1}, function(err, data) {
+router.delete('/:user/:category/:word/:translation', function(req, res, next) {
+  db.collection('dictionary').findOne({user: req.params.user, category: req.params.category, word: req.params.word}, {_id:1, translation: 1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {
@@ -129,8 +129,8 @@ router.delete('/:category/:word/:translation', function(req, res, next) {
   });
 });
 
-router.delete('/:category/:word', function(req, res, next) {
-  db.collection('dictionary').remove({word: req.params.word, category: req.params.category}, function(err, data) {
+router.delete('/:user/:category/:word', function(req, res, next) {
+  db.collection('dictionary').remove({user: req.params.user, category: req.params.category, word: req.params.word}, function(err, data) {
     if(err) {
       throw err;
     } else if(data) {

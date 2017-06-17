@@ -32,7 +32,7 @@ app.options('*', function(req, res) {
 });
 
 app.use('/authenticate', authentication);
-app.use('/dictionary', security.authorization, dictionary);
+app.use('/dictionary', security.authorization, security.access, dictionary);
 app.use('/quiz', security.authorization, quiz);
 app.use('/profile', security.authorization, profile);
 app.use('/sprint', security.authorization, sprint);

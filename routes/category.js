@@ -19,6 +19,45 @@ var upload = multer({
 
 var Q = require('q');
 
+function create(req, res, initial, modifyCategories) {
+  Q.fcall(function() {
+    return initial;
+  }).then(function(category) {
+
+    if(req.files) {
+      return storage.upload('category-' + req.params.user + '-' + req.params.category, config.s3ImgBucket, req.files[0].buffer)
+        .then(function(response) {
+          return {
+            'name': req.params.name,
+            'imageUrl': response
+          };
+        }).catch(function(err) {
+          debug('Error occured while uploading category img, %s', err);
+          return initial;
+        });
+    } else {
+      return category;
+    }
+  }).then(function(category) {
+
+    var categories = modifyCategories(category);
+    db.collection('user').update({'_id': mongojs.ObjectId(req.params.user)}, {
+      $set: {
+        'category': categories
+      }
+    }, function(err, result) {
+      if(err) {
+        throw err;
+      } else {
+        return res.status(200).json({
+          'success': true,
+          'category' : category
+        });
+      }
+    });
+  });
+}
+
 router.param('user', auth.validateUser);
 
 router.get('/:user', function(req, res, next) {
@@ -39,53 +78,53 @@ router.post('/:user/:category', upload.any(), function(req, res, next) {
       if(!data.category) {
         data.category = [];
       }
-      var existingCategory = data.category.find(function(elem) {
+
+      var index = data.category.findIndex(function(elem) {
         return elem.name === req.params.category;
       });
-      if(existingCategory) {
+
+      if(index !== -1) {
         return res.status(409).json({
           'success': false,
           'err': 'category is already present'
         });
       } else {
-
-        var promise = Q.fcall(function() {
-          return {
-            'name': req.params.category
-          };
-        }).then(function(category) {
-          if(req.files) {
-            return storage.upload('category-' + req.params.category, config.s3ImgBucket, req.files[0].buffer)
-              .then(function(response) {
-                return {
-                  'name': req.params.category,
-                  'imageUrl': response
-                };
-              }).catch(function(err) {
-                debug('Error occured while uploading category img, %s', err);
-                return {
-                  'name': req.params.category,
-                };
-              });
-          } else {
-            return category;
-          }
-        }).then(function(category) {
+        return create(req, res, {
+          'name': req.params.category
+        }, function(category) {
           data.category.push(category);
-          db.collection('user').update({'_id': mongojs.ObjectId(req.params.user)}, {
-            $set: {
-              'category': data.category
-            }
-          }, function(err, result) {
-            if(err) {
-              throw err;
-            } else {
-              return res.status(200).json({
-                'success': true,
-                'category' : category
-              });
-            }
-          });
+          return data.category;
+        });
+      }
+    }
+  });
+});
+
+router.put('/:user/:category/:name', upload.any(), function(req, res, next) {
+  db.collection('user').findOne({'_id': mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
+    if(err) {
+      throw err;
+    } else {
+      if(!data.category) {
+        data.category = [];
+      }
+
+      var index = data.category.findIndex(function(elem) {
+        return elem.name === req.params.category;
+      });
+
+      if(index === -1) {
+        return res.status(404).json({
+          'success': false,
+          'err': 'category doesn\'t exists'
+        });
+      } else {
+        return create(req, res, {
+          'name': req.params.name,
+          'imageUrl': data.category[index].imageUrl
+        }, function(category) {
+          data.category[index] = category;
+          return data.category;
         });
       }
     }

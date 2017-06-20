@@ -27,10 +27,8 @@ function create(req, res, initial, modifyCategories) {
     if(req.files) {
       return storage.upload('category-' + req.params.user + '-' + req.params.category, config.s3ImgBucket, req.files[0].buffer)
         .then(function(response) {
-          return {
-            'name': req.params.name,
-            'imageUrl': response
-          };
+          initial.imageUrl = response;
+          return initial;
         }).catch(function(err) {
           debug('Error occured while uploading category img, %s', err);
           return initial;

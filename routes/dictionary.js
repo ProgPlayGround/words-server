@@ -9,13 +9,14 @@ var getSpeech = require('../common/audio');
 var storage = require('../common/storage');
 var images = require('../common/images');
 var examples = require('../common/examples');
+var filter = require('../common/searchCriteria').searchFilter;
 
 var Q = require('q');
 
 router.param('user', auth.validateUser);
 
 router.get('/:user/:category', function(req, res, next) {
-  db.collection('dictionary').find({user: req.params.user, category: req.params.category}, {_id:0}).toArray(function(err, data) {
+  db.collection('dictionary').find(filter(req.params.user, req.params.category), {_id:0}).toArray(function(err, data) {
     res.send(data);
   });
 });

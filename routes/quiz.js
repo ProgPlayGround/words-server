@@ -1,8 +1,9 @@
 var router = require('express').Router();
 var config = require('../config');
 var supportedLang = config.languages.split(',');
-var mongojs = require('mongojs');
 var auth = require('../common/authorization');
+var filter = require('../common/searchCriteria').searchFilter;
+var mongojs = require('mongojs');
 var db = mongojs(config.dbUrl);
 
 function getOptions(answers, correct) {
@@ -47,7 +48,7 @@ router.get('/:user/:category/:lang', function(req, res, next) {
       'message': 'Not supported language'
     });
   }
-  db.collection('dictionary').find({user: req.params.user, category: req.params.category}, {_id:0, audioUrl:0, imageUrl:0}, {limit: 50}, function(err, data) {
+  db.collection('dictionary').find(filter(req.params.user, req.params.category), {_id:0, audioUrl:0, imageUrl:0}, {limit: 50}, function(err, data) {
     if(err) {
       return res.status(500).send({
         'success': false,

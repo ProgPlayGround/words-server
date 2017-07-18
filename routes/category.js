@@ -24,7 +24,7 @@ function create(req, res, initial, modifyCategories) {
     return initial;
   }).then(function(category) {
 
-    if(req.files) {
+    if(req.files.length !== 0) {
       return storage.upload('category-' + req.params.user + '-' + req.params.category, config.s3ImgBucket, req.files[0].buffer)
         .then(function(response) {
           initial.imageUrl = response;
@@ -39,7 +39,7 @@ function create(req, res, initial, modifyCategories) {
   }).then(function(category) {
 
     var categories = modifyCategories(category);
-    db.collection('user').update({'_id': mongojs.ObjectId(req.params.user)}, {
+    db.collection('user').update({'_id': req.params.user}, {
       $set: {
         'category': categories
       }
@@ -59,7 +59,7 @@ function create(req, res, initial, modifyCategories) {
 router.param('user', auth.validateUser);
 
 router.get('/:user', function(req, res, next) {
-  db.collection('user').findOne({_id: mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
+  db.collection('user').findOne({_id: req.params.user}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -69,7 +69,7 @@ router.get('/:user', function(req, res, next) {
 });
 
 router.post('/:user/:category', upload.any(), function(req, res, next) {
-  db.collection('user').findOne({'_id': mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
+  db.collection('user').findOne({'_id': req.params.user}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -99,7 +99,7 @@ router.post('/:user/:category', upload.any(), function(req, res, next) {
 });
 
 router.put('/:user/:category/:name', upload.any(), function(req, res, next) {
-  db.collection('user').findOne({'_id': mongojs.ObjectId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
+  db.collection('user').findOne({'_id': req.params.user}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -117,20 +117,30 @@ router.put('/:user/:category/:name', upload.any(), function(req, res, next) {
           'err': 'category doesn\'t exists'
         });
       } else {
-        return create(req, res, {
-          'name': req.params.name,
-          'imageUrl': data.category[index].imageUrl
-        }, function(category) {
-          data.category[index] = category;
-          return data.category;
+        var duplicateIndex = data.category.findIndex(function(elem) {
+          return elem.name === req.params.name;
         });
+        if(duplicateIndex === -1 || duplicateIndex === index) {
+          return create(req, res, {
+            'name': req.params.name,
+            'imageUrl': data.category[index].imageUrl
+          }, function(category) {
+            data.category[index] = category;
+            return data.category;
+          });
+        } else {
+          return res.status(409).json({
+            'success': false,
+            'err': 'category is already present'
+          });
+        }
       }
     }
   });
 });
 
 router.delete('/:user/:category', function(req, res, next) {
-  db.collection('user').update({_id: mongojs.ObjectId(req.params.user)}, {$pull: {'category': {'name': req.params.category}}},
+  db.collection('user').update({_id: req.params.user}, {$pull: {'category': {'name': req.params.category}}},
    function(err, data) {
     if(err) {
       throw err;

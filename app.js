@@ -5,7 +5,8 @@ var bodyParser = require('body-parser');
 
 var dictionary = require('./routes/dictionary');
 var quiz = require('./routes/quiz');
-var authentication = require('./routes/authentication');
+var basicAuth = require('./routes/auth/basic');
+var fbAuth = require('./routes/auth/fb');
 var profile = require('./routes/profile');
 var sprint = require('./routes/sprint');
 var logout = require('./routes/logout');
@@ -31,7 +32,8 @@ app.options('*', function(req, res) {
   res.sendStatus(200);
 });
 
-app.use('/authenticate', authentication);
+app.use('/authenticate', basicAuth);
+app.use('/authenticate/fb', auth.authorization, fbAuth);
 app.use('/dictionary', auth.authorization, dictionary);
 app.use('/quiz', auth.authorization, quiz);
 app.use('/profile', auth.authorization, profile);

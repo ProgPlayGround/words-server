@@ -82,7 +82,7 @@ var auth = {
         fbRes.setEncoding('utf8');
         fbRes.on('data', function (body) {
           var fbBody = JSON.parse(body);
-          res.locals.user = fbBody.data.user_id;
+          res.locals.user = 'fb' + fbBody.data.user_id;
           next();
         });
       } else {

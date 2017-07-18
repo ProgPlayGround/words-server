@@ -2,8 +2,8 @@ var router = require('express').Router();
 var crypto = require('crypto');
 var mongojs = require('mongojs');
 var jwt = require('jsonwebtoken');
-var dbUrl = require('../config').dbUrl;
-var securityConfig = require('../config-security');
+var dbUrl = require('../../config').dbUrl;
+var securityConfig = require('../../config-security');
 var db = mongojs(dbUrl);
 
 function decodeCredentials(salt, password, callback) {

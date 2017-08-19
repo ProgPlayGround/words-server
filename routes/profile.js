@@ -45,7 +45,7 @@ function updateProfile(req, res, initial) {
       if(err) {
         throw err;
       } else {
-        return res.status(200).send();
+        return res.send();
       }
     });
   });
@@ -63,7 +63,7 @@ router.get('/:user', function(req, res, next) {
       return res.status(500).send({
         'message': err
       });
-    } else if(data.length === 0) {
+    } else if(!data) {
       return res.status(204).send({
         'message': 'User doesn\'t exist'
       });
@@ -82,12 +82,60 @@ router.put('/:user', upload.any(), function(req, res, next) {
       return res.status(500).send({
         'message': err
       });
-    } else if(data.length === 0) {
+    } else if(!data) {
       return res.status(204).send({
         'message': 'User doesn\'t exist'
       });
     } else {
       return updateProfile(req, res, data);
+    }
+  });
+});
+
+
+router.get('/:user/ranking', function(req, res, next) {
+  db.collection('user').findOne({'_id': req.params.user}, {'_id': 0, 'rank': 1}, function(err, data) {
+    if(err) {
+      return res.status(500).send({
+        'message': err
+      });
+    } else if(!data) {
+      return res.status(204).send({
+        'message': 'User doesn\'t exist'
+      });
+    } else {
+      return res.send({'rank': data.rank || 0});
+    }
+  });
+});
+
+router.patch('/:user/ranking', function(req, res, next) {
+  if(isNaN(req.body.points)) {
+    return res.status(400).send({
+      'message': 'Rank should be a number'
+    });
+  }
+  db.collection('user').findOne({'_id': req.params.user}, function(err, data) {
+    if(err) {
+      return res.status(500).send({
+        'message': err
+      });
+    } else if(!data) {
+      return res.status(204).send({
+        'message': 'User doesn\'t exist'
+      });
+    } else {
+      db.collection('user').update({'_id': req.params.user}, {
+        $inc: {
+          'rank': req.body.points
+        }
+      }, function(err, result) {
+        if(err) {
+          throw err;
+        } else {
+          return res.send();
+        }
+      });
     }
   });
 });

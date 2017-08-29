@@ -45,7 +45,12 @@ function updateProfile(req, res, initial) {
       if(err) {
         throw err;
       } else {
-        return res.send();
+        return res.status(200).json({
+          'name': req.body.name,
+          'surname': req.body.surname,
+          'age': calculateAge(new Date(req.body.birthday)),
+          'avatar': profile.avatar
+        });
       }
     });
   });

@@ -3,7 +3,7 @@ var config = require('../config');
 var db = require('mongojs')(config.dbUrl);
 var auth = require('../common/authorization');
 var storage = require('../common/storage');
-
+var rank = require('../common/rank');
 var multer = require('multer');
 var upload = multer({
   storage: multer.memoryStorage(),
@@ -76,6 +76,7 @@ router.get('/:user', function(req, res, next) {
       if(data.birthday) {
         data.age = calculateAge(new Date(data.birthday));
       }
+      data.rank = rank(data.rank);
       return res.send(data);
     }
   });

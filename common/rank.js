@@ -1,20 +1,19 @@
-function calculate(points) {
+function calculateRank(level) {
   var beg = 1;
   var next = 2;
-  var level = 0;
-  while(points - beg >= 0) {
-    points -= beg;
-    ++level;
+  var cur = 1;
+  while(cur++ < level) {
     var prev = next;
     next += beg;
     beg = prev;
   }
   return {
-    level: level,
-    progress: points / beg
+    'points': 0,
+    'level': level,
+    'upPoints': beg
   };
-};
+}
 
 module.exports = function(points) {
-  return calculate(points);
+  return calculateRank(points);
 };

@@ -76,7 +76,10 @@ router.get('/:user', function(req, res, next) {
       if(data.birthday) {
         data.age = calculateAge(new Date(data.birthday));
       }
-      data.rank = rank(data.rank);
+      if(!data.rank) {
+        data.rank = { points: 0, level: 0, upPoints: 1 };
+      }
+      data.rank.progress = data.rank.points / data.rank.upPoints;
       return res.send(data);
     }
   });
@@ -121,7 +124,8 @@ router.patch('/:user/ranking', function(req, res, next) {
       'message': 'Rank should be a number'
     });
   }
-  db.collection('user').findOne({'_id': req.params.user}, function(err, data) {
+
+  db.collection('user').findOne({'_id': req.params.user}, {'_id': 1, 'rank': 1, 'activities': 1}, function(err, data) {
     if(err) {
       return res.status(500).send({
         'message': err
@@ -131,11 +135,8 @@ router.patch('/:user/ranking', function(req, res, next) {
         'message': 'User doesn\'t exist'
       });
     } else {
-      db.collection('user').update({'_id': req.params.user}, {
-        $inc: {
-          'rank': req.body.points
-        }
-      }, function(err, result) {
+
+      db.collection('user').update({'_id': req.params.user}, updatedRankData(data, req.body.points), function(err, result) {
         if(err) {
           throw err;
         } else {
@@ -145,5 +146,29 @@ router.patch('/:user/ranking', function(req, res, next) {
     }
   });
 });
+
+function updatedRankData(data, inc) {
+  var current = data.rank || { points: 0, level: 1, upPoints: 1 };
+  var updated = {
+    '$set':{}
+  };
+
+  current.points += inc;
+  if(current.points >= current.upPoints) {
+    current = rank(current.level + 1);
+
+    var activities = data.activities || [];
+
+    activities.unshift('Congratulation, you have raised your horizon. Your level is ' + current.level);
+    if(activities.length > 10) {
+      data.activities.splice(9);
+    }
+
+    updated.$set.activities = activities;
+  }
+  updated.$set.rank = current;
+
+  return updated;
+}
 
 module.exports = router;

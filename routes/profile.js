@@ -113,7 +113,10 @@ router.get('/:user/ranking', function(req, res, next) {
         'message': 'User doesn\'t exist'
       });
     } else {
-      return res.send({'rank': data.rank || 0});
+      return res.send({
+        'rank': data.rank.points || 0,
+        'upPoints': data.rank.upPoints || 1
+      });
     }
   });
 });
@@ -136,11 +139,16 @@ router.patch('/:user/ranking', function(req, res, next) {
       });
     } else {
 
-      db.collection('user').update({'_id': req.params.user}, updatedRankData(data, req.body.points), function(err, result) {
+      var updated = updatedRankData(data, req.body.points);
+
+      db.collection('user').update({'_id': req.params.user}, updated, function(err, result) {
         if(err) {
           throw err;
         } else {
-          return res.send();
+          return res.send({
+            'rank': updated.$set.rank.points,
+            'upPoints': updated.$set.rank.upPoints
+          });
         }
       });
     }

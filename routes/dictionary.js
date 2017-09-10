@@ -90,6 +90,19 @@ router.post('/:user/:category', function(req, res, next) {
           if(err) {
             throw err;
           } else {
+            db.collection('user').update({'_id': req.params.user}, {
+              $push: {
+                'activities': {
+                  $each: ['Added new word <b>' + wordCard.word + '</b> to dictionary, category: ' + wordCard.category],
+                  $position: 0,
+                  $slice: 10
+                }
+              }
+            }, function(err, data) {
+              if(err) {
+                throw err;
+              }
+            });
             res.send(wordCard);
           }
         });

@@ -4,6 +4,7 @@ var db = require('mongojs')(config.dbUrl);
 var auth = require('../common/authorization');
 var storage = require('../common/storage');
 var rank = require('../common/rank');
+var activities = require('../common/activities');
 var multer = require('multer');
 var upload = multer({
   storage: multer.memoryStorage(),
@@ -165,14 +166,8 @@ function updatedRankData(data, inc) {
   if(current.points >= current.upPoints) {
     current = rank(current.level + 1);
 
-    var activities = data.activities || [];
-
-    activities.unshift('Congratulation, you have raised your horizon. Your level is ' + current.level);
-    if(activities.length > 10) {
-      data.activities.splice(9);
-    }
-
-    updated.$set.activities = activities;
+    updated.$set.activities = activities(data.activities,
+      'Congratulation, you have raised your horizon. Your level is ' + current.level);
   }
   updated.$set.rank = current;
 

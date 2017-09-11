@@ -93,7 +93,7 @@ router.post('/:user/:category', function(req, res, next) {
             db.collection('user').update({'_id': req.params.user}, {
               $push: {
                 'activities': {
-                  $each: ['Added new word <b>' + wordCard.word + '</b> to dictionary, category: ' + wordCard.category],
+                  $each: ['Added new word <span class="activity-add-word">' + wordCard.word + '</span> to dictionary, category: <span class="activity-add-category">' + wordCard.category + '</span>'],
                   $position: 0,
                   $slice: 10
                 }

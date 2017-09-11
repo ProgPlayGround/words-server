@@ -4,7 +4,6 @@ var db = require('mongojs')(config.dbUrl);
 var auth = require('../common/authorization');
 var storage = require('../common/storage');
 var rank = require('../common/rank');
-var activities = require('../common/activities');
 var multer = require('multer');
 var upload = multer({
   storage: multer.memoryStorage(),
@@ -129,7 +128,7 @@ router.patch('/:user/ranking', function(req, res, next) {
     });
   }
 
-  db.collection('user').findOne({'_id': req.params.user}, {'_id': 1, 'rank': 1, 'activities': 1}, function(err, data) {
+  db.collection('user').findOne({'_id': req.params.user}, {'_id': 1, 'rank': 1}, function(err, data) {
     if(err) {
       return res.status(500).send({
         'message': err
@@ -166,8 +165,13 @@ function updatedRankData(data, inc) {
   if(current.points >= current.upPoints) {
     current = rank(current.level + 1);
 
-    updated.$set.activities = activities(data.activities,
-      'Congratulation, you have raised your horizon. Your level is ' + current.level);
+    updated.$push = {
+      'activities': {
+        $each: ['Congratulation, you have raised your horizon. Your level is <span class="activity-level">' + current.level + '</span>'],
+        $position: 0,
+        $slice: 10
+      }
+    }
   }
   updated.$set.rank = current;
 

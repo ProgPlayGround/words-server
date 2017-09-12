@@ -1,5 +1,6 @@
 var router = require('express').Router();
 var mongojs = require('mongojs');
+var objId = mongojs.ObjectId;
 
 var config = require('../config');
 var db = mongojs(config.dbUrl);
@@ -90,7 +91,7 @@ router.post('/:user/:category', function(req, res, next) {
           if(err) {
             throw err;
           } else {
-            db.collection('user').update({'_id': req.params.user}, {
+            db.collection('user').update({'_id': objId(req.params.user)}, {
               $push: {
                 'activities': {
                   $each: ['Added new word <span class="activity-add-word">' + wordCard.word + '</span> to dictionary, category: <span class="activity-add-category">' + wordCard.category + '</span>'],

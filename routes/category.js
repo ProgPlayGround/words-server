@@ -1,5 +1,6 @@
 var router = require('express').Router();
 var mongojs = require('mongojs');
+var objId = mongojs.ObjectId;
 var debug = require('debug')('words-server:category');
 
 var config = require('../config');
@@ -39,7 +40,7 @@ function create(req, res, initial, modifyCategories) {
   }).then(function(category) {
 
     var categories = modifyCategories(category);
-    db.collection('user').update({'_id': req.params.user}, {
+    db.collection('user').update({'_id': objId(req.params.user)}, {
       $set: {
         'category': categories
       }
@@ -59,7 +60,7 @@ function create(req, res, initial, modifyCategories) {
 router.param('user', auth.validateUser);
 
 router.get('/:user', function(req, res, next) {
-  db.collection('user').findOne({_id: req.params.user}, {_id:0, category: 1}, function(err, data) {
+  db.collection('user').findOne({_id: objId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -69,9 +70,14 @@ router.get('/:user', function(req, res, next) {
 });
 
 router.post('/:user/:category', upload.any(), function(req, res, next) {
-  db.collection('user').findOne({'_id': req.params.user}, {_id:0, category: 1}, function(err, data) {
+  db.collection('user').findOne({'_id': objId(req.params.user)}, {_id:1}, function(err, data) {
     if(err) {
       throw err;
+    } else if(!data) {
+      return res.status(404).json({
+        'success': false,
+        'err': 'user wasn\'t found'
+      });
     } else {
       if(!data.category) {
         data.category = [];
@@ -99,7 +105,7 @@ router.post('/:user/:category', upload.any(), function(req, res, next) {
 });
 
 router.put('/:user/:category/:name', upload.any(), function(req, res, next) {
-  db.collection('user').findOne({'_id': req.params.user}, {_id:0, category: 1}, function(err, data) {
+  db.collection('user').findOne({'_id': objId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -140,7 +146,7 @@ router.put('/:user/:category/:name', upload.any(), function(req, res, next) {
 });
 
 router.delete('/:user/:category', function(req, res, next) {
-  db.collection('user').update({_id: req.params.user}, {$pull: {'category': {'name': req.params.category}}},
+  db.collection('user').update({_id: objId(req.params.user)}, {$pull: {'category': {'name': req.params.category}}},
    function(err, data) {
     if(err) {
       throw err;

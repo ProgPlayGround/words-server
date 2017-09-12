@@ -4,6 +4,12 @@ var redisClient = require('../common/redisConnection');
 var https = require('https');
 var crypto = require('crypto');
 
+var template = "0".repeat(24);
+
+function prepareUserId(id) {
+  return (template + id).slice(-24);
+}
+
 function token(req, res, next) {
 
   var authType = req.headers['auth-type'];
@@ -82,7 +88,7 @@ var auth = {
         fbRes.setEncoding('utf8');
         fbRes.on('data', function (body) {
           var fbBody = JSON.parse(body);
-          res.locals.user = 'fb' + fbBody.data.user_id;
+          res.locals.user = prepareUserId('fb' + fbBody.data.user_id);
           next();
         });
       } else {

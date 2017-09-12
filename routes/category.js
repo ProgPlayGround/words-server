@@ -63,7 +63,7 @@ router.get('/:user', function(req, res, next) {
     if(err) {
       throw err;
     } else {
-      return res.send(data.category);
+      return res.send(data && data.category ? data.category : []);
     }
   });
 });

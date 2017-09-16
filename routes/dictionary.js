@@ -174,7 +174,7 @@ router.patch('/:user/learned/:category/:word', function(req, res, next) {
         throw err;
       } else if (data) {
         var points = req.body.game == 'quiz' ? 5 : 1;
-        db.collection('dictionary').update({'_id': data._id}, {
+        db.collection('dictionary').update({'_id': data._id, 'answered': {'$lt': 100}}, {
             '$inc': {
               'answered': points
             }

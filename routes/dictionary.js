@@ -165,4 +165,35 @@ router.delete('/:user/:category/:word', function(req, res, next) {
   });
 });
 
+router.patch('/:user/learned/:category/:word', function(req, res, next) {
+  var searchFilter = filter(req.params.user, req.params.category);
+  searchFilter.word = req.params.word;
+  db.collection('dictionary').findOne(searchFilter, {_id:1},
+    function(err, data) {
+      if(err) {
+        throw err;
+      } else if (data) {
+        var points = req.body.game == 'quiz' ? 5 : 1;
+        db.collection('dictionary').update({'_id': data._id}, {
+            '$inc': {
+              'answered': points
+            }
+        }, function(err, data) {
+          if(err) {
+            throw err;
+          } else {
+            res.send({
+              'answered': data.answered
+            });
+          }
+        });
+      } else {
+        res.status(404).send({
+          'success': false,
+          'err': 'word doesn\'t exist'
+        });
+      }
+  });
+});
+
 module.exports = router;

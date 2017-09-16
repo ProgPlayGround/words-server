@@ -83,6 +83,7 @@ router.post('/:user/:category', function(req, res, next) {
           'user': req.params.user,
           'category': req.params.category,
           'translation': [req.body.translation],
+          'answered': 1,
           'audioUrl': result[0].value,
           'imageUrl': result[1].value,
           'samples': result[2].value

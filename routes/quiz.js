@@ -41,7 +41,7 @@ function shuffleOptions(options) {
 
 router.param('user', auth.validateUser);
 
-router.get('/:user/:category/:lang', function(req, res, next) {
+router.get('/:user/:category/:lang/:answered', function(req, res, next) {
   if(supportedLang.indexOf(req.params.lang) === -1) {
     return res.status(404).send({
       'success': false,
@@ -63,12 +63,14 @@ router.get('/:user/:category/:lang', function(req, res, next) {
       var answers = data.map(function(elem) {
         return req.params.lang === 'en' ? elem.translation[0] : elem.word;
       });
-      var quiz = data.map(function(elem) {
+      var quiz = data.filter(function(elem) {
+        return req.params.answered === 'true' || elem.answered < 100;
+      }).map(function(elem) {
         return {
           'word': req.params.lang === 'en' ? elem.word : elem.translation[0],
           'answer': req.params.lang === 'en' ? elem.translation[0] : elem.word,
           'options': getOptions(answers, req.params.lang === 'en' ? elem.translation[0] : elem.word)
-        }
+        };
       });
       return res.send(quiz);
     }

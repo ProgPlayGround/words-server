@@ -8,8 +8,8 @@ var db = mongojs(dbUrl);
 
 router.param('user', auth.validateUser);
 
-router.get('/:user/:category', function(req, res, next) {
-  db.collection('dictionary').find(filter(req.params.user, req.params.category), {_id:0, word:1, translation:1}, {limit: 50}).toArray(function(err, data) {
+router.get('/:user/:category/:answered', function(req, res, next) {
+  db.collection('dictionary').find(filter(req.params.user, req.params.category), {_id:0, word:1, translation:1, answered:1}, {limit: 50}).toArray(function(err, data) {
     if(err) {
       return res.status(500).send({
         'success': false,
@@ -21,7 +21,9 @@ router.get('/:user/:category', function(req, res, next) {
         'message': 'Missing data'
       });
     } else {
-      var questions = data.map(function(elem, index) {
+      var questions = data.filter(function(elem) {
+        return req.params.answered === 'true' || elem.answered < 100;
+      }).map(function(elem, index) {
         var answer;
         if(data.length === 0 || random.bool()) {
           answer = elem.translation[random.range(0, elem.translation.length)];

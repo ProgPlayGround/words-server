@@ -43,11 +43,12 @@ var auth = {
     var userId = credentials[0];
     token = credentials[1];
     if(userId && token) {
-      console.log(userId, token);
       jwt.verify(token, configSecurity.jwtSecret, function(err, decoded) {
         if(err) {
-          console.log(err);
-          throw err;
+          res.status(401).send({
+            'success': false,
+            'message': 'Not Authorized'
+          });
         } else if(decoded.name != userId) {
           res.status(403).send({
             'success': false,

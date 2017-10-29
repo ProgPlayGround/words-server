@@ -1,6 +1,6 @@
 var configSecurity = require('../config-security');
 
-var Flickr = require("flickrapi"),
+var Flickr = require('flickrapi'),
 flickrConfig = {
     api_key: configSecurity.flickrKey,
     secret: configSecurity.flickrSecret
@@ -17,7 +17,7 @@ module.exports = function(word) {
       }, function(err, result) {
         if(err) {
            reject(err);
-        } else {
+        } else if(result.photos.photo.length !== 0){
           flickr.photos.getSizes({
             photo_id: result.photos.photo[0].id
           }, function(err, photos) {
@@ -27,6 +27,8 @@ module.exports = function(word) {
               resolve(photos.sizes.size[0].source);
             }
           });
+        } else {
+          reject('Photo not found');
         }
       });
     });

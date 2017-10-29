@@ -74,7 +74,7 @@ router.post('/:user/:category', upload.any(), function(req, res, next) {
     if(err) {
       throw err;
     } else if(!data) {
-      return res.status(404).json({
+      return res.status(400).json({
         'success': false,
         'err': 'user wasn\'t found'
       });
@@ -118,7 +118,7 @@ router.put('/:user/:category/:name', upload.any(), function(req, res, next) {
       });
 
       if(index === -1) {
-        return res.status(404).json({
+        return res.status(400).json({
           'success': false,
           'err': 'category doesn\'t exists'
         });

@@ -14,6 +14,4 @@ function calculateRank(level) {
   };
 }
 
-module.exports = function(points) {
-  return calculateRank(points);
-};
+module.exports = calculateRank;

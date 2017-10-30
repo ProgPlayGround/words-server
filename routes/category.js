@@ -70,7 +70,7 @@ router.get('/:user', function(req, res, next) {
 });
 
 router.post('/:user/:category', upload.any(), function(req, res, next) {
-  db.collection('user').findOne({'_id': objId(req.params.user)}, {_id:1}, function(err, data) {
+  db.collection('user').findOne({'_id': objId(req.params.user)}, {_id:1, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {

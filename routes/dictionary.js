@@ -14,10 +14,8 @@ var filter = require('../common/searchCriteria').searchFilter;
 
 var Q = require('q');
 
-router.param('user', auth.validateUser);
-
-router.get('/:user/:category/:answered', function(req, res, next) {
-  db.collection('dictionary').find(filter(req.params.user, req.params.category), {_id:0}).toArray(function(err, data) {
+router.get('/:category/:answered', function(req, res, next) {
+  db.collection('dictionary').find(filter(res.locals.user, req.params.category), {_id:0}).toArray(function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -29,8 +27,8 @@ router.get('/:user/:category/:answered', function(req, res, next) {
   });
 });
 
-router.patch('/:user/:category', function(req, res, next) {
-  db.collection('dictionary').findOne({user: req.params.user, category: req.params.category, word: req.body.word}, {_id:1, translation:1}, function(err, data) {
+router.patch('/:category', function(req, res, next) {
+  db.collection('dictionary').findOne({user: res.locals.user, category: req.params.category, word: req.body.word}, {_id:1, translation:1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {
@@ -64,13 +62,13 @@ router.patch('/:user/:category', function(req, res, next) {
   });
 });
 
-router.post('/:user/:category', function(req, res, next) {
+router.post('/:category', function(req, res, next) {
   var word = {
     'word': req.body.word,
     'translation': req.body.translation
   };
 
-  db.collection('dictionary').findOne({user: req.params.user, category: req.params.category, word: req.body.word}, {_id:0}, function(err, data) {
+  db.collection('dictionary').findOne({user: res.locals.user, category: req.params.category, word: req.body.word}, {_id:0}, function(err, data) {
     if(err) {
       throw err;
     } else if(data) {
@@ -87,7 +85,7 @@ router.post('/:user/:category', function(req, res, next) {
       .then(function(result) {
         var wordCard = {
           'word': req.body.word,
-          'user': req.params.user,
+          'user': res.locals.user,
           'category': req.params.category,
           'translation': [req.body.translation],
           'answered': 1,
@@ -99,7 +97,7 @@ router.post('/:user/:category', function(req, res, next) {
           if(err) {
             throw err;
           } else {
-            db.collection('user').update({'_id': objId(req.params.user)}, {
+            db.collection('user').update({'_id': objId(res.locals.user)}, {
               $push: {
                 'activities': {
                   $each: ['Added new word <span class="activity-add-word">' + wordCard.word + '</span> to dictionary, category: <span class="activity-add-category">' + wordCard.category + '</span>'],
@@ -120,8 +118,8 @@ router.post('/:user/:category', function(req, res, next) {
   });
 });
 
-router.delete('/:user/:category/:word/:translation', function(req, res, next) {
-  db.collection('dictionary').findOne({user: req.params.user, category: req.params.category, word: req.params.word}, {_id:1, translation: 1}, function(err, data) {
+router.delete('/:category/:word/:translation', function(req, res, next) {
+  db.collection('dictionary').findOne({user: res.locals.user, category: req.params.category, word: req.params.word}, {_id:1, translation: 1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {
@@ -156,8 +154,8 @@ router.delete('/:user/:category/:word/:translation', function(req, res, next) {
   });
 });
 
-router.delete('/:user/:category/:word', function(req, res, next) {
-  db.collection('dictionary').remove({user: req.params.user, category: req.params.category, word: req.params.word}, function(err, data) {
+router.delete('/:category/:word', function(req, res, next) {
+  db.collection('dictionary').remove({user: res.locals.user, category: req.params.category, word: req.params.word}, function(err, data) {
     if(err) {
       throw err;
     } else if(data) {
@@ -173,8 +171,8 @@ router.delete('/:user/:category/:word', function(req, res, next) {
   });
 });
 
-router.patch('/:user/learned/:category/:word', function(req, res, next) {
-  var searchFilter = filter(req.params.user, req.params.category);
+router.patch('/learned/:category/:word', function(req, res, next) {
+  var searchFilter = filter(res.locals.user, req.params.category);
   searchFilter.word = req.params.word;
   db.collection('dictionary').findOne(searchFilter, {_id:1},
     function(err, data) {

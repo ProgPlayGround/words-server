@@ -6,7 +6,6 @@ var debug = require('debug')('words-server:category');
 var config = require('../config');
 var db = mongojs(config.dbUrl);
 
-var auth = require('../common/authorization');
 var storage = require('../common/storage');
 
 var multer = require('multer');
@@ -26,7 +25,7 @@ function create(req, res, initial, modifyCategories) {
   }).then(function(category) {
 
     if(req.files.length !== 0) {
-      return storage.upload('category-' + req.params.user + '-' + req.params.category, config.s3ImgBucket, req.files[0].buffer)
+      return storage.upload('category-' + res.locals.user + '-' + req.params.category, config.s3ImgBucket, req.files[0].buffer)
         .then(function(response) {
           initial.imageUrl = response;
           return initial;
@@ -40,7 +39,7 @@ function create(req, res, initial, modifyCategories) {
   }).then(function(category) {
 
     var categories = modifyCategories(category);
-    db.collection('user').update({'_id': objId(req.params.user)}, {
+    db.collection('user').update({'_id': objId(res.locals.user)}, {
       $set: {
         'category': categories
       }
@@ -57,10 +56,8 @@ function create(req, res, initial, modifyCategories) {
   });
 }
 
-router.param('user', auth.validateUser);
-
-router.get('/:user', function(req, res, next) {
-  db.collection('user').findOne({_id: objId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
+router.get('/', function(req, res, next) {
+  db.collection('user').findOne({_id: objId(res.locals.user)}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -69,8 +66,8 @@ router.get('/:user', function(req, res, next) {
   });
 });
 
-router.post('/:user/:category', upload.any(), function(req, res, next) {
-  db.collection('user').findOne({'_id': objId(req.params.user)}, {_id:1, category: 1}, function(err, data) {
+router.post('/:category', upload.any(), function(req, res, next) {
+  db.collection('user').findOne({'_id': objId(res.locals.user)}, {_id:1, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {
@@ -104,8 +101,8 @@ router.post('/:user/:category', upload.any(), function(req, res, next) {
   });
 });
 
-router.put('/:user/:category/:name', upload.any(), function(req, res, next) {
-  db.collection('user').findOne({'_id': objId(req.params.user)}, {_id:0, category: 1}, function(err, data) {
+router.put('/:category/:name', upload.any(), function(req, res, next) {
+  db.collection('user').findOne({'_id': objId(res.locals.user)}, {_id:0, category: 1}, function(err, data) {
     if(err) {
       throw err;
     } else {
@@ -145,15 +142,15 @@ router.put('/:user/:category/:name', upload.any(), function(req, res, next) {
   });
 });
 
-router.delete('/:user/:category', function(req, res, next) {
-  db.collection('user').update({_id: objId(req.params.user)}, {$pull: {'category': {'name': req.params.category}}},
+router.delete('/:category', function(req, res, next) {
+  db.collection('user').update({_id: objId(res.locals.user)}, {$pull: {'category': {'name': req.params.category}}},
    function(err, data) {
     if(err) {
       throw err;
     } else {
-      db.collection('dictionary').remove({user: req.params.user, category: req.params.category}, function(err, data) {
+      db.collection('dictionary').remove({user: res.locals.user, category: req.params.category}, function(err, data) {
         if(err) {
-          debug('Error removing words user: %s, category: %s', req.params.user, req.params.category);
+          debug('Error removing words user: %s, category: %s', res.locals.user, req.params.category);
         } else {
           debug('Remmoved %s words', data.n);
         }

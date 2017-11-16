@@ -5,7 +5,6 @@ var objId = mongojs.ObjectId;
 var config = require('../config');
 var db = mongojs(config.dbUrl);
 
-var auth = require('../common/authorization');
 var getSpeech = require('../common/audio');
 var storage = require('../common/storage');
 var images = require('../common/images');

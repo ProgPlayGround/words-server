@@ -3,7 +3,7 @@ var config = require('../config');
 var mongojs = require('mongojs');
 var objId = mongojs.ObjectId;
 var db = mongojs(config.dbUrl);
-var auth = require('../common/authorization');
+
 var storage = require('../common/storage');
 var rank = require('../common/rank');
 var multer = require('multer');
@@ -17,14 +17,12 @@ var upload = multer({
 
 var Q = require('q');
 
-router.param('user', auth.validateUser);
-
 function updateProfile(req, res, initial) {
   Q.fcall(function() {
     return initial;
   }).then(function(profile) {
     if(req.files.length !== 0) {
-      return storage.upload('profile-' + req.params.user, config.s3ImgBucket, req.files[0].buffer)
+      return storage.upload('profile-' + res.locals.user, config.s3ImgBucket, req.files[0].buffer)
         .then(function(response) {
           profile.avatar = response;
           return profile;
@@ -36,7 +34,7 @@ function updateProfile(req, res, initial) {
       return profile;
     }
   }).then(function(profile) {
-    db.collection('user').update({'_id': objId(req.params.user)}, {
+    db.collection('user').update({'_id': objId(res.locals.user)}, {
       $set: {
         'name': req.body.name,
         'surname': req.body.surname,
@@ -64,8 +62,8 @@ function calculateAge(birthday) {
    return Math.abs(ageDate.getUTCFullYear() - 1970);
  }
 
-router.get('/:user', function(req, res, next) {
-  db.collection('user').findOne({'_id': objId(req.params.user)}, {'_id': 0, 'category': 0}, function(err, data) {
+router.get('/', function(req, res, next) {
+  db.collection('user').findOne({'_id': objId(res.locals.user)}, {'_id': 0, 'category': 0}, function(err, data) {
     if(err) {
       return res.status(500).send({
         'message': err
@@ -87,8 +85,8 @@ router.get('/:user', function(req, res, next) {
   });
 });
 
-router.put('/:user', upload.any(), function(req, res, next) {
-  db.collection('user').findOne({'_id': objId(req.params.user)}, function(err, data) {
+router.put('/', upload.any(), function(req, res, next) {
+  db.collection('user').findOne({'_id': objId(res.locals.user)}, function(err, data) {
     if(err) {
       return res.status(500).send({
         'message': err
@@ -104,8 +102,8 @@ router.put('/:user', upload.any(), function(req, res, next) {
 });
 
 
-router.get('/:user/ranking', function(req, res, next) {
-  db.collection('user').findOne({'_id': objId(req.params.user)}, {'_id': 0, 'rank': 1}, function(err, data) {
+router.get('/ranking', function(req, res, next) {
+  db.collection('user').findOne({'_id': objId(res.locals.user)}, {'_id': 0, 'rank': 1}, function(err, data) {
     if(err) {
       return res.status(500).send({
         'message': err
@@ -123,14 +121,14 @@ router.get('/:user/ranking', function(req, res, next) {
   });
 });
 
-router.patch('/:user/ranking', function(req, res, next) {
+router.patch('/ranking', function(req, res, next) {
   if(isNaN(req.body.points)) {
     return res.status(400).send({
       'message': 'Rank should be a number'
     });
   }
 
-  db.collection('user').findOne({'_id': objId(req.params.user)}, {'_id': 1, 'rank': 1}, function(err, data) {
+  db.collection('user').findOne({'_id': objId(res.locals.user)}, {'_id': 1, 'rank': 1}, function(err, data) {
     if(err) {
       return res.status(500).send({
         'message': err
@@ -143,7 +141,7 @@ router.patch('/:user/ranking', function(req, res, next) {
 
       var updated = updatedRankData(data, req.body.points);
 
-      db.collection('user').update({'_id': objId(req.params.user)}, updated, function(err, result) {
+      db.collection('user').update({'_id': objId(res.locals.user)}, updated, function(err, result) {
         if(err) {
           throw err;
         } else {

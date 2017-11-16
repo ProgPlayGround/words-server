@@ -45,8 +45,8 @@ router.get('/:word', function(req, res, next) {
   });
 });
 
-router.post('/:user/:category/:word', upload.any(), function(req, res, next) {
-  db.collection('dictionary').findOne({user: req.params.user, category: req.params.category, word: req.params.word}, {_id:1}, function(err, data) {
+router.post('/:category/:word', upload.any(), function(req, res, next) {
+  db.collection('dictionary').findOne({user: res.locals.user, category: req.params.category, word: req.params.word}, {_id:1}, function(err, data) {
     if(err) {
       throw err;
     } else if(!data) {
@@ -55,7 +55,7 @@ router.post('/:user/:category/:word', upload.any(), function(req, res, next) {
         'err': 'word doesn\'t exist'
       });
     } else {
-      storage.upload(req.params.user + '-' + req.params.category + '-' + req.params.word, config.s3ImgBucket, req.files[0].buffer)
+      storage.upload(res.locals.user + '-' + req.params.category + '-' + req.params.word, config.s3ImgBucket, req.files[0].buffer)
       .then(function(response) {
         db.collection('dictionary').update({'_id': data._id}, {
           $set: {

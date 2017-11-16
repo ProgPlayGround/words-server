@@ -1,15 +1,13 @@
 var router = require('express').Router();
 var dbUrl = require('../config').dbUrl;
 var random = require('../common/random');
-var auth = require('../common/authorization');
+
 var filter = require('../common/searchCriteria').searchFilter;
 var mongojs = require('mongojs');
 var db = mongojs(dbUrl);
 
-router.param('user', auth.validateUser);
-
-router.get('/:user/:category/:answered', function(req, res, next) {
-  db.collection('dictionary').find(filter(req.params.user, req.params.category), {_id:0, word:1, translation:1, answered:1}, {limit: 50}).toArray(function(err, data) {
+router.get('/:category/:answered', function(req, res, next) {
+  db.collection('dictionary').find(filter(res.locals.user, req.params.category), {_id:0, word:1, translation:1, answered:1}, {limit: 50}).toArray(function(err, data) {
     if(err) {
       return res.status(500).send({
         'success': false,

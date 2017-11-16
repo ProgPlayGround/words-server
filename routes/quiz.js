@@ -1,7 +1,7 @@
 var router = require('express').Router();
 var config = require('../config');
 var supportedLang = config.languages.split(',');
-var auth = require('../common/authorization');
+
 var filter = require('../common/searchCriteria').searchFilter;
 var mongojs = require('mongojs');
 var db = mongojs(config.dbUrl);
@@ -39,16 +39,14 @@ function shuffleOptions(options) {
   return options;
 }
 
-router.param('user', auth.validateUser);
-
-router.get('/:user/:category/:lang/:answered', function(req, res, next) {
+router.get('/:category/:lang/:answered', function(req, res, next) {
   if(supportedLang.indexOf(req.params.lang) === -1) {
     return res.status(404).send({
       'success': false,
       'message': 'Not supported language'
     });
   }
-  db.collection('dictionary').find(filter(req.params.user, req.params.category), {_id:0, audioUrl:0, imageUrl:0}, {limit: 50}, function(err, data) {
+  db.collection('dictionary').find(filter(res.locals.user, req.params.category), {_id:0, audioUrl:0, imageUrl:0}, {limit: 50}, function(err, data) {
     if(err) {
       return res.status(500).send({
         'success': false,
